@@ -1,0 +1,17 @@
+project:
+  type: website
+
+website:
+  title: "OPM - Operational Process Management"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: sprint2.qmd
+        text: Sprint 2
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true

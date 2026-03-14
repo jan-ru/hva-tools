@@ -1,0 +1,13 @@
+---
+title: "OPM — Operationeel Procesmanagement"
+---
+
+## Welkom
+
+Deze site ondersteunt de **agentische AI-beoordelingsworkflow** voor het vak Operationeel Procesmanagement (OPM).
+
+Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.
+
+### Sprintpagina's
+
+- [Sprint 2](sprint2.qmd) — OPM Sprint 2 DMA & Meetplan tbv Datacollectie
