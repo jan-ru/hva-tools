@@ -21,7 +21,7 @@ Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 
 ## Generieke Prompts
 
-### OPM Sprint 2 DMA
+### DMA
 
 #### P-DMA-01 — Beoordeling
 
@@ -29,7 +29,7 @@ Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 
 ---
 
-### OPM Sprint 2 - Meetplan tbv Datacollectie
+### Meetplan
 
 #### P-MP-01 — Beoordeling
 
@@ -55,9 +55,9 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 ::: {.panel-tabset}
 
-## FC2E-01
+## E01
 
-### OPM Sprint 2 DMA
+### DMA
 
 #### Inleverbestanden
 
@@ -69,7 +69,7 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 ---
 
-### OPM Sprint 2 - Meetplan tbv Datacollectie
+### Meetplan
 
 #### Inleverbestanden
 
@@ -79,9 +79,9 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 - [Rubric](sprint-2/opm-sprint-2-meetplan-tbv-datacollectie/rubric.md)
 
-## FC2E-03
+## E03
 
-### OPM Sprint 2 DMA
+### DMA
 
 #### Inleverbestanden
 
@@ -93,7 +93,7 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 ---
 
-### OPM Sprint 2 - Meetplan tbv Datacollectie
+### Meetplan
 
 #### Inleverbestanden
 
@@ -103,9 +103,9 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 - [Rubric](sprint-2/opm-sprint-2-meetplan-tbv-datacollectie/rubric.md)
 
-## FC2F-01
+## F01
 
-### OPM Sprint 2 DMA
+### DMA
 
 #### Inleverbestanden
 
@@ -118,7 +118,7 @@ Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken d
 
 ---
 
-### OPM Sprint 2 - Meetplan tbv Datacollectie
+### Meetplan
 
 #### Inleverbestanden
 
