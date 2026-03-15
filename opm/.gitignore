@@ -21,3 +21,11 @@ uv.lock
 
 # Editor
 .vscode/
+
+/.quarto/
+
+# Ruff cache
+.ruff_cache/
+
+# Kiro
+.kiro/

@@ -77,8 +77,8 @@ def test_page_metadata():
     content = _read(INDEX_QMD)
     assert "Opgesteld door:" in content
     assert "Opgesteld op:" in content
-    assert "Laatst aangepast door:" in content
-    assert "Laatst aangepast op:" in content
+    assert "Aangepast door:" in content
+    assert "Aangepast op:" in content
 
 
 # ---------------------------------------------------------------------------

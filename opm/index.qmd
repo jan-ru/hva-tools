@@ -2,7 +2,7 @@
 title: "Beoordelingsprompts"
 ---
 
-Deze pagina geeft de prompts weer die gebruikt zijn bij het nakijken van OPM sprint 2.
+Deze pagina geeft de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.
 
 Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.
 
@@ -36,13 +36,13 @@ Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 <tbody>
 <tr style="vertical-align: top;">
 <td><strong>DMA</strong></td>
-<td><em>[Plaatshouder — voeg hier de daadwerkelijk gebruikte DMA-beoordelingsprompt in.]</em></td>
-<td><em>[Plaatshouder — voeg hier eventuele optionele DMA-prompts in.]</em></td>
+<td>Projectcharter: check of het projectcharter de 7 elementen van een projectcharter bevat (Business case, Probleembeschrijving, Doelstelling, Scope, Process, Team, Timeline).</td>
+<td>Is de doelstelling in het projectcharter SMART?<br><br>Wordt er in de business case verwezen naar kosten of opbrengsten, investeringen of omzet, bruto of netto winst, business terminologie?</td>
 </tr>
 <tr style="vertical-align: top;">
 <td><strong>Meetplan</strong></td>
 <td><ol><li>Beoordeel het bijgevoegde Excel-bestand conform de rubric. Meeteenheid genoemd (Ja/Nee), CTQ genoemd (Ja/Nee), Aantal metingen genoemd (Ja/Nee), Totaalscore 0–3.</li><li>Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken die de studenten vervolgens kunnen analyseren door middel van het maken van grafieken? Stel gerust vragen als je die hebt.</li></ol></td>
-<td><em>[Geen optionele prompts.]</em></td>
+<td>Indien studenten zelf een dataset hebben aangeleverd: ga na of de data in de dataset overeenkomt met de specificatie in het meetplan.</td>
 </tr>
 </tbody>
 </table>
@@ -56,6 +56,15 @@ Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 
 ---
 
-::: {.page-meta}
-Opgesteld door: Jan-Ru Muller | Opgesteld op: 14-03-2026 | Laatst aangepast door: Jan-Ru Muller | Laatst aangepast op: 15-03-2026
-:::
+```{=html}
+<div class="page-meta">
+  <div class="meta-row">
+    <span class="meta-left">Opgesteld door: Jan-Ru Muller</span>
+    <span class="meta-right">Opgesteld op: 14-03-2026</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-left">Aangepast door: Jan-Ru Muller</span>
+    <span class="meta-right">Aangepast op: 15-03-2026</span>
+  </div>
+</div>
+```

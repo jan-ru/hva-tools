@@ -73,9 +73,24 @@
 
 /* Page metadata footer */
 .page-meta {
-  font-size: 0.8em;
+  font-size: 0.65em;
   color: #999;
   border-top: 1px solid #ddd;
   margin-top: 2rem;
-  padding-top: 0.8rem;
+  padding-top: 0.5rem;
+}
+
+.page-meta .meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.page-meta .meta-left {
+  text-align: left;
+}
+
+.page-meta .meta-right {
+  text-align: right;
 }
