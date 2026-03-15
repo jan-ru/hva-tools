@@ -70,3 +70,12 @@
   margin-top: 1rem;
   color: #495057;
 }
+
+/* Page metadata footer */
+.page-meta {
+  font-size: 0.8em;
+  color: #999;
+  border-top: 1px solid #ddd;
+  margin-top: 2rem;
+  padding-top: 0.8rem;
+}

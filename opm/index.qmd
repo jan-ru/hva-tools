@@ -1,13 +1,61 @@
 ---
-title: "OPM — Operationeel Procesmanagement"
+title: "Beoordelingsprompts"
 ---
 
-## Welkom
-
-Deze site ondersteunt de **agentische AI-beoordelingsworkflow** voor het vak Operationeel Procesmanagement (OPM).
+Deze pagina geeft de prompts weer die gebruikt zijn bij het nakijken van OPM sprint 2.
 
 Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.
 
-### Sprintpagina's
+De kolom "Verplicht" toont de prompts die altijd worden uitgevoerd. De kolom "Optioneel" toont eventueel te gebruiken aanvullende prompts.
 
-- [Sprint 2](sprint2.qmd) — OPM Sprint 2 DMA & Meetplan tbv Datacollectie
+---
+
+::: {.panel-tabset}
+
+## Sprint 1
+
+*[Nog geen inhoud voor Sprint 1.]*
+
+## Sprint 2
+
+Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
+
+- **OPM Sprint 2 DMA**
+- **OPM Sprint 2 - Meetplan tbv Datacollectie**
+
+```{=html}
+<table>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 45%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr><th></th><th>Verplicht</th><th>Optioneel</th></tr>
+</thead>
+<tbody>
+<tr style="vertical-align: top;">
+<td><strong>DMA</strong></td>
+<td><em>[Plaatshouder — voeg hier de daadwerkelijk gebruikte DMA-beoordelingsprompt in.]</em></td>
+<td><em>[Plaatshouder — voeg hier eventuele optionele DMA-prompts in.]</em></td>
+</tr>
+<tr style="vertical-align: top;">
+<td><strong>Meetplan</strong></td>
+<td><ol><li>Beoordeel het bijgevoegde Excel-bestand conform de rubric. Meeteenheid genoemd (Ja/Nee), CTQ genoemd (Ja/Nee), Aantal metingen genoemd (Ja/Nee), Totaalscore 0–3.</li><li>Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken die de studenten vervolgens kunnen analyseren door middel van het maken van grafieken? Stel gerust vragen als je die hebt.</li></ol></td>
+<td><em>[Geen optionele prompts.]</em></td>
+</tr>
+</tbody>
+</table>
+```
+
+## Sprint 3
+
+*[Nog geen inhoud voor Sprint 3.]*
+
+:::
+
+---
+
+::: {.page-meta}
+Opgesteld door: Jan-Ru Muller | Opgesteld op: 14-03-2026 | Laatst aangepast door: Jan-Ru Muller | Laatst aangepast op: 15-03-2026
+:::
