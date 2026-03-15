@@ -71,6 +71,17 @@
   color: #495057;
 }
 
+/* Compact ordered lists in tab content */
+.tab-content ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.tab-content ol li {
+  margin-bottom: 0.1rem;
+}
+
 /* Page metadata footer */
 .page-meta {
   font-size: 0.65em;

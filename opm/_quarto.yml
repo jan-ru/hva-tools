@@ -7,6 +7,8 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: werkwijze.qmd
+        text: Werkwijze
 
 format:
   html:

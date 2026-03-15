@@ -6,7 +6,7 @@ Een AI-toepassing voor het beoordelen van studentopdrachten binnen het vak Opera
 
 1. Studentgroepen leveren opdrachten in via Brightspace
 2. De docent downloadt de inleveringen en plaatst ze in `submissions/sprint2/{groep-id}/`
-3. De AI-agent leest de rubric en inleverbestanden en genereert feedback
+3. De AI-agent leest de context, rubric en inleverbestanden en genereert feedback
 4. De docent beoordeelt de feedback
 5. De docent kopieert relevante feedback terug naar Brightspace
 
@@ -14,7 +14,8 @@ Een AI-toepassing voor het beoordelen van studentopdrachten binnen het vak Opera
 
 ```
 _quarto.yml                        # Quarto site-configuratie
-index.qmd                          # Enkele pagina met sprint-tabs
+index.qmd                          # Beoordelingsprompts met sprint-tabs
+werkwijze.qmd                      # Werkwijze (aparte pagina)
 styles.css                         # Aangepaste stijlen
 
 sprint-2/                          # Rubrieken per opdracht
@@ -23,7 +24,8 @@ sprint-2/                          # Rubrieken per opdracht
 
 docs/                              # HTML-output
   huisstijl.html                   # HvA template
-  brightspace.html                 # Gegenereerde Brightspace-pagina
+  beoordeling.html                 # Gegenereerde Brightspace-pagina (prompts)
+  werkwijze.html                   # Gegenereerde Brightspace-pagina (werkwijze)
   instructie.html                  # Standalone instructiepagina
 
 scripts/
@@ -39,8 +41,8 @@ tests/                             # Property-based tests (pytest)
 
 ## Drie outputs
 
-1. **Quarto website** (`_site/index.html`) — sprint-tabs met crosstab prompttabel
-2. **Brightspace HTML** (`docs/brightspace.html`) — HvA huisstijl, CSS-only tabs
+1. **Quarto website** (`_site/`) — sprint-tabs met crosstab prompttabel + werkwijze
+2. **Brightspace HTML** (`docs/beoordeling.html`, `docs/werkwijze.html`) — HvA huisstijl, CSS-only tabs
 3. **Feedback documenten** (`feedback/sprint2/`) — per studentgroep
 
 ## Aan de slag
@@ -63,3 +65,9 @@ uv run pytest
 ## Licentie
 
 [MIT](LICENSE)
+
+
+## Todo
+
+- [ ] Script om rubrics van Brightspace om te zetten naar Markdown-bestanden zodat de AI-agent ze kan lezen
+- [ ] Yellow Belt cursussamenvattingen als context aanbieden aan de AI-agent (bijv. via MCP)

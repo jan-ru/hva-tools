@@ -92,6 +92,18 @@ def test_sprint_tabs_present():
     assert "## Sprint 1" in content, "Sprint 1 tab expected"
     assert "## Sprint 2" in content, "Sprint 2 tab expected"
     assert "## Sprint 3" in content, "Sprint 3 tab expected"
+    assert "## Werkwijze" not in content, "Werkwijze should not be a tab"
+
+
+# ---------------------------------------------------------------------------
+# Property: Werkwijze is a separate page
+# ---------------------------------------------------------------------------
+
+
+def test_werkwijze_separate_page():
+    assert os.path.exists("werkwijze.qmd"), "werkwijze.qmd not found"
+    content = _read("werkwijze.qmd")
+    assert "Werkwijze" in content
 
 
 # ---------------------------------------------------------------------------

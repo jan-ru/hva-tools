@@ -33,12 +33,17 @@
 #tab3:checked ~ #content3 { display: block; }
 
 /* Prompt table */
-.prompt-table { width: 100%; margin-top: 1rem; }
+.prompt-table { width: 100%; margin-top: 1rem; font-size: 0.85em; }
 .prompt-table th { background: #f5f5f5; }
 .prompt-table td:first-child { width: 10%; font-weight: 600; }
 .prompt-table td, .prompt-table th { vertical-align: top; }
 .prompt-table ol { margin: 0; padding-left: 1.2rem; }
 .prompt-table ol li { margin-bottom: .4rem; }
+
+/* Compact ordered lists in tab panels */
+.tab-panel ol { margin-top: 0.25rem; margin-bottom: 0.5rem; }
+.tab-panel ol li { margin-bottom: 0; }
+.tab-panel ol li p { margin-bottom: 0.15rem; }
 
 /* Page metadata footer */
 .page-meta { font-size: 0.65em; color: #999; border-top: 1px solid #ddd;
@@ -56,8 +61,7 @@
 <h1 class="title">Beoordelingsprompts</h1>
 
 
-<p>Deze pagina geeft de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.</p>
-<p>Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.</p>
+<p>Deze pagina geeft de context en de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.</p>
 <p>De kolom “Verplicht” toont de prompts die altijd worden uitgevoerd. De kolom “Optioneel” toont eventueel te gebruiken aanvullende prompts.</p>
 <hr>
 
@@ -74,6 +78,12 @@
 <p><em>[Nog geen inhoud voor Sprint 1.]</em></p>
 </div>
 <div id="content2" class="tab-panel">
+<p>Als context voor deze opdracht worden gebruikt de documenten:</p>
+<ol type="1">
+<li>OPM-Samenvatting-LSS-Define-fase</li>
+<li>OPM-Samenvatting-LSS-Measure-fase</li>
+<li>OPM-Samenvatting-LSS-Analyse-fase</li>
+</ol>
 <p>Sprint 2 bevat twee opdrachten onder de categorie <strong>Sprint 2</strong> in Brightspace:</p>
 <ul>
 <li><strong>OPM Sprint 2 DMA</strong></li>
@@ -112,7 +122,12 @@ Wordt er in de business case verwezen naar kosten of opbrengsten, investeringen 
 </table>
 </div>
 <div id="content3" class="tab-panel">
-<p><em>[Nog geen inhoud voor Sprint 3.]</em></p>
+<p>Als context voor deze opdracht worden gebruikt de documenten:</p>
+<ol start="4" style="margin-top: 0.25rem;">
+<li>OPM-Samenvatting-LSS-Improve-fase</li>
+<li>OPM-Samenvatting-LSS-Control-fase</li>
+</ol>
+<p><em>[Nog geen prompts voor Sprint 3.]</em></p>
 </div>
 </div>
 

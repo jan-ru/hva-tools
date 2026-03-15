@@ -2,9 +2,7 @@
 title: "Beoordelingsprompts"
 ---
 
-Deze pagina geeft de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.
-
-Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.
+Deze pagina geeft de context en de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.
 
 De kolom "Verplicht" toont de prompts die altijd worden uitgevoerd. De kolom "Optioneel" toont eventueel te gebruiken aanvullende prompts.
 
@@ -18,13 +16,19 @@ De kolom "Verplicht" toont de prompts die altijd worden uitgevoerd. De kolom "Op
 
 ## Sprint 2
 
+Als context voor deze opdracht worden gebruikt de documenten:
+
+1. OPM-Samenvatting-LSS-Define-fase
+2. OPM-Samenvatting-LSS-Measure-fase
+3. OPM-Samenvatting-LSS-Analyse-fase
+
 Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 
 - **OPM Sprint 2 DMA**
 - **OPM Sprint 2 - Meetplan tbv Datacollectie**
 
 ```{=html}
-<table>
+<table style="font-size: 0.85em;">
 <colgroup>
 <col style="width: 10%">
 <col style="width: 45%">
@@ -50,7 +54,16 @@ Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
 
 ## Sprint 3
 
-*[Nog geen inhoud voor Sprint 3.]*
+Als context voor deze opdracht worden gebruikt de documenten:
+
+```{=html}
+<ol start="4" style="margin-top: 0.25rem;">
+<li>OPM-Samenvatting-LSS-Improve-fase</li>
+<li>OPM-Samenvatting-LSS-Control-fase</li>
+</ol>
+```
+
+*[Nog geen prompts voor Sprint 3.]*
 
 :::
 
