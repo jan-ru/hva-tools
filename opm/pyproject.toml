@@ -6,7 +6,12 @@ dependencies = [
     "pytest>=8.0",
     "pyyaml>=6.0",
     "beautifulsoup4>=4.12",
+    "pre-commit>=3.0",
+    "ruff>=0.8",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120

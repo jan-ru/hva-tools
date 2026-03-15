@@ -20,7 +20,7 @@ def extract_body_content(html: str) -> str:
     # Find everything inside <main> or the quarto content div
     # Quarto wraps content in <main class="content" ...> or <div id="quarto-content">
     match = re.search(
-        r'<main[^>]*>(.*?)</main>',
+        r"<main[^>]*>(.*?)</main>",
         html,
         re.DOTALL,
     )
@@ -28,7 +28,7 @@ def extract_body_content(html: str) -> str:
         return match.group(1).strip()
 
     # Fallback: extract body content
-    match = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL)
+    match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL)
     if match:
         return match.group(1).strip()
 
@@ -37,8 +37,8 @@ def extract_body_content(html: str) -> str:
 
 def extract_quarto_styles(html: str) -> str:
     """Extract any inline <style> blocks from Quarto output."""
-    styles = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL)
-    return '\n'.join(styles)
+    styles = re.findall(r"<style[^>]*>(.*?)</style>", html, re.DOTALL)
+    return "\n".join(styles)
 
 
 def build_brightspace():
@@ -55,20 +55,20 @@ def build_brightspace():
     page = huisstijl
 
     # Replace title
-    page = re.sub(r'<title>.*?</title>', '<title>Beoordelingsprompts — Docentinstructie</title>', page)
+    page = re.sub(r"<title>.*?</title>", "<title>Beoordelingsprompts — Docentinstructie</title>", page)
 
     # Replace the content area
     placeholder_pattern = re.compile(
         r'(<div class="col-xs-12 col-sm-offset-2 col-sm-8">).*?(</div>\s*</div>\s*<footer>)',
         re.DOTALL,
     )
-    replacement = rf'\1\n{content}\n\2'
+    replacement = rf"\1\n{content}\n\2"
     page = placeholder_pattern.sub(replacement, page)
 
     # Inject extra styles if any
     if extra_styles:
-        style_block = f'<style>\n{extra_styles}\n</style>'
-        page = page.replace('</head>', f'{style_block}\n</head>')
+        style_block = f"<style>\n{extra_styles}\n</style>"
+        page = page.replace("</head>", f"{style_block}\n</head>")
 
     output_path = root / "docs" / "brightspace.html"
     output_path.write_text(page, encoding="utf-8")

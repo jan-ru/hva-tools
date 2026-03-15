@@ -5,7 +5,6 @@ Property-based tests for the OPM website.
 import os
 import re
 import yaml
-import pytest
 
 
 INDEX_QMD = "index.qmd"
@@ -28,6 +27,7 @@ def _read(path: str) -> str:
 # Property: Site is a valid Quarto website
 # ---------------------------------------------------------------------------
 
+
 def test_site_config_valid():
     config_path = "_quarto.yml"
     assert os.path.exists(config_path)
@@ -41,6 +41,7 @@ def test_site_config_valid():
 # Property: Rubric files exist
 # ---------------------------------------------------------------------------
 
+
 def test_rubric_files_exist():
     for path in EXPECTED_RUBRIC_PATHS:
         assert os.path.exists(path), f"Rubric not found: {path}"
@@ -49,6 +50,7 @@ def test_rubric_files_exist():
 # ---------------------------------------------------------------------------
 # Property: Course name is "Operations (OPM)"
 # ---------------------------------------------------------------------------
+
 
 def test_course_name_correct():
     content = _read(INDEX_QMD)
@@ -60,6 +62,7 @@ def test_course_name_correct():
 # Property: Title is "Beoordelingsprompts"
 # ---------------------------------------------------------------------------
 
+
 def test_title_correct():
     content = _read(INDEX_QMD)
     assert "Beoordelingsprompts" in content, "Title should be 'Beoordelingsprompts'"
@@ -68,6 +71,7 @@ def test_title_correct():
 # ---------------------------------------------------------------------------
 # Property: Page metadata present
 # ---------------------------------------------------------------------------
+
 
 def test_page_metadata():
     content = _read(INDEX_QMD)
@@ -81,6 +85,7 @@ def test_page_metadata():
 # Property: Sprint tabs present (Sprint 1, 2, 3)
 # ---------------------------------------------------------------------------
 
+
 def test_sprint_tabs_present():
     content = _read(INDEX_QMD)
     assert "{.panel-tabset}" in content, "Sprint tabs expected"
@@ -92,6 +97,7 @@ def test_sprint_tabs_present():
 # ---------------------------------------------------------------------------
 # Property: Sprint 2 crosstab table with Verplicht/Optioneel columns
 # ---------------------------------------------------------------------------
+
 
 def test_crosstab_table_present():
     content = _read(INDEX_QMD)
@@ -105,6 +111,7 @@ def test_crosstab_table_present():
 # Property: Both assignments present
 # ---------------------------------------------------------------------------
 
+
 def test_both_assignments_in_page():
     content = _read(INDEX_QMD)
     for assignment in ASSIGNMENTS:
@@ -115,6 +122,7 @@ def test_both_assignments_in_page():
 # Property: "eventueel te gebruiken aanvullende prompts" present
 # ---------------------------------------------------------------------------
 
+
 def test_aanvullende_prompts_description():
     content = _read(INDEX_QMD)
     assert "eventueel te gebruiken aanvullende prompts" in content
@@ -123,6 +131,7 @@ def test_aanvullende_prompts_description():
 # ---------------------------------------------------------------------------
 # Property: Synthetic dataset prompt is in Verplicht column for Meetplan
 # ---------------------------------------------------------------------------
+
 
 def test_synthetic_dataset_prompt_in_verplicht():
     content = _read(INDEX_QMD)
