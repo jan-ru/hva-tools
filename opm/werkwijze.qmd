@@ -1,0 +1,34 @@
+---
+title: "Werkwijze"
+format:
+  html:
+    mermaid-format: png
+---
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Een AI-agent leest de ingeleverde bestanden van elke studentgroep samen met de bijbehorende context en rubric, en genereert vervolgens gestructureerde feedback — één onderdeel per rubriccriterium plus een algemene samenvatting. De docent beoordeelt deze feedback en kopieert de relevante delen naar Brightspace om de beoordeling af te ronden.
+:::
+
+::: {.column width="50%"}
+```{mermaid}
+%%| fig-width: 2.5
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '12px'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 30, 'padding': 8, 'wrappingWidth': 300}}}%%
+flowchart TD
+    A[Studenten leveren in via Brightspace] --> B[Docent downloadt inleveringen]
+    B --> C[AI-agent leest inlevering + context + rubric]
+    C --> D[AI-agent genereert feedback per criterium]
+    D --> E{Docent beoordeelt feedback}
+    E -->|Akkoord| F[Docent kopieert feedback naar Brightspace]
+    E -->|Aanpassen| G[Docent past feedback aan]
+    G --> F
+    F --> H[Beoordeling afgerond in Brightspace]
+
+    style E fill:#fff3cd,stroke:#ffc107,color:#000
+    style G fill:#fff3cd,stroke:#ffc107,color:#000
+    style F fill:#d4edda,stroke:#28a745,color:#000
+```
+:::
+
+::::

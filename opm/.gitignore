@@ -1,0 +1,31 @@
+# Quarto build output
+_site/
+.quarto/
+**/*.quarto_ipynb
+
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+
+# uv
+.uv/
+uv.lock
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+
+/.quarto/
+
+# Ruff cache
+.ruff_cache/
+
+# Kiro
+.kiro/

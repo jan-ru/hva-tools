@@ -1,0 +1,83 @@
+---
+title: "Beoordelingsprompts"
+---
+
+Deze pagina geeft de context en de prompts weer die gebruikt zijn bij het nakijken van de OPM sprints.
+
+De kolom "Verplicht" toont de prompts die altijd worden uitgevoerd. De kolom "Optioneel" toont eventueel te gebruiken aanvullende prompts.
+
+---
+
+::: {.panel-tabset}
+
+## Sprint 1
+
+*[Nog geen inhoud voor Sprint 1.]*
+
+## Sprint 2
+
+Als context voor deze opdracht worden gebruikt de documenten:
+
+1. OPM-Samenvatting-LSS-Define-fase
+2. OPM-Samenvatting-LSS-Measure-fase
+3. OPM-Samenvatting-LSS-Analyse-fase
+
+Sprint 2 bevat twee opdrachten onder de categorie **Sprint 2** in Brightspace:
+
+- **OPM Sprint 2 DMA**
+- **OPM Sprint 2 - Meetplan tbv Datacollectie**
+
+```{=html}
+<table style="font-size: 0.85em;">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 45%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr><th></th><th>Verplicht</th><th>Optioneel</th></tr>
+</thead>
+<tbody>
+<tr style="vertical-align: top;">
+<td><strong>DMA</strong></td>
+<td>Projectcharter: check of het projectcharter de 7 elementen van een projectcharter bevat (Business case, Probleembeschrijving, Doelstelling, Scope, Process, Team, Timeline).</td>
+<td>Is de doelstelling in het projectcharter SMART?<br><br>Wordt er in de business case verwezen naar kosten of opbrengsten, investeringen of omzet, bruto of netto winst, business terminologie?</td>
+</tr>
+<tr style="vertical-align: top;">
+<td><strong>Meetplan</strong></td>
+<td><ol><li>Beoordeel het bijgevoegde Excel-bestand conform de rubric. Meeteenheid genoemd (Ja/Nee), CTQ genoemd (Ja/Nee), Aantal metingen genoemd (Ja/Nee), Totaalscore 0–3.</li><li>Op basis van het "meetplan": kun je een synthetische dataset in Excel aanmaken die de studenten vervolgens kunnen analyseren door middel van het maken van grafieken? Stel gerust vragen als je die hebt.</li></ol></td>
+<td>Indien studenten zelf een dataset hebben aangeleverd: ga na of de data in de dataset overeenkomt met de specificatie in het meetplan.</td>
+</tr>
+</tbody>
+</table>
+```
+
+## Sprint 3
+
+Als context voor deze opdracht worden gebruikt de documenten:
+
+```{=html}
+<ol start="4" style="margin-top: 0.25rem;">
+<li>OPM-Samenvatting-LSS-Improve-fase</li>
+<li>OPM-Samenvatting-LSS-Control-fase</li>
+</ol>
+```
+
+*[Nog geen prompts voor Sprint 3.]*
+
+:::
+
+---
+
+```{=html}
+<div class="page-meta">
+  <div class="meta-row">
+    <span class="meta-left">Opgesteld door: Jan-Ru Muller</span>
+    <span class="meta-right">Opgesteld op: 14-03-2026</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-left">Aangepast door: Jan-Ru Muller</span>
+    <span class="meta-right">Aangepast op: 15-03-2026</span>
+  </div>
+</div>
+```

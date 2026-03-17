@@ -1,0 +1,107 @@
+/* Two-column layout — generic prompts column stays sticky */
+.columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.columns > .column:first-child {
+  position: sticky;
+  top: 60px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding-right: 1rem;
+  border-right: 2px solid #dee2e6;
+}
+
+/* Group tab styles */
+.panel-tabset .nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.panel-tabset .nav-tabs .nav-link {
+  font-weight: 600;
+  color: #495057;
+  border-radius: 4px 4px 0 0;
+}
+
+.panel-tabset .nav-tabs .nav-link.active {
+  color: #0d6efd;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+
+/* Assignment section styles */
+.tab-content h3 {
+  margin-top: 1.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #e9ecef;
+  color: #343a40;
+}
+
+.tab-content h4 {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Visual separator between assignment sections */
+.tab-content hr {
+  margin: 2rem 0;
+  border-top: 2px dashed #dee2e6;
+}
+
+/* Input file and rubric link lists */
+.tab-content ul {
+  padding-left: 1.25rem;
+}
+
+.tab-content ul li {
+  margin-bottom: 0.25rem;
+}
+
+/* Prompt blocks */
+.tab-content h5 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  color: #495057;
+}
+
+/* Compact ordered lists in tab content */
+.tab-content ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.tab-content ol li {
+  margin-bottom: 0.1rem;
+}
+
+/* Page metadata footer */
+.page-meta {
+  font-size: 0.65em;
+  color: #999;
+  border-top: 1px solid #ddd;
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+}
+
+.page-meta .meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.page-meta .meta-left {
+  text-align: left;
+}
+
+.page-meta .meta-right {
+  text-align: right;
+}
