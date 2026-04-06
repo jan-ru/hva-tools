@@ -1,0 +1,29 @@
+[project]
+name = "brightspace-feedback-extractor"
+version = "0.1.0"
+description = "CLI tool to extract rubric feedback from Brightspace DLO using Playwright"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cyclopts>=4.10.1",
+    "playwright>=1.58.0",
+    "pydantic>=2.12.5",
+]
+
+[project.scripts]
+brightspace-extractor = "brightspace_extractor.cli:app"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.151.10",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "ruff>=0.15.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["brightspace_extractor"]
