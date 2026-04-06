@@ -43,6 +43,9 @@ def extract(
     cdp_url: Annotated[
         str, cyclopts.Parameter(help="Playwright CDP endpoint")
     ] = "http://localhost:9222",
+    base_url: Annotated[
+        str, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = "https://dlo.mijnhva.nl",
 ) -> None:
     """Extract rubric feedback for specified class and assignments."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -67,7 +70,7 @@ def extract(
 
     # --- navigate to class (fail-fast) ---
     try:
-        navigate_to_class(page, class_id)
+        navigate_to_class(page, class_id, base_url=base_url)
     except NavigationError as exc:
         logger.error("%s", exc)
         browser.close()
@@ -77,7 +80,9 @@ def extract(
     all_feedbacks = []
     for assignment_id in assignment_ids:
         try:
-            navigate_to_assignment_submissions(page, class_id, assignment_id)
+            navigate_to_assignment_submissions(
+                page, class_id, assignment_id, base_url=base_url
+            )
         except NavigationError as exc:
             logger.warning("Skipping assignment %s: %s", assignment_id, exc)
             continue

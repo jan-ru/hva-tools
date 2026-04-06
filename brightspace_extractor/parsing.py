@@ -34,16 +34,23 @@ def parse_group_submission(raw: dict) -> GroupSubmission:
     """
     try:
         group_name = raw["group_name"]
-        students = tuple(Student(name=s) for s in raw["students"])
+        students = tuple(Student(name=s) for s in raw.get("students", []))
+
+        # criteria may be at top level or nested under "rubric"
+        raw_criteria = raw.get("criteria") or raw.get("rubric", {}).get("criteria", [])
         criteria = tuple(
             Criterion(name=c["name"], score=c["score"], feedback=c.get("feedback", ""))
-            for c in raw["criteria"]
+            for c in raw_criteria
         )
         rubric = RubricFeedback(criteria=criteria)
+
+        raw_date = raw.get("submission_date", "")
         submission_date = (
-            raw["submission_date"]
-            if isinstance(raw["submission_date"], date)
-            else date.fromisoformat(raw["submission_date"])
+            raw_date
+            if isinstance(raw_date, date)
+            else date.fromisoformat(raw_date)
+            if raw_date
+            else date.today()
         )
         return GroupSubmission(
             group_name=group_name,

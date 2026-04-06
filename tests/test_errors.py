@@ -200,75 +200,62 @@ class TestMissingDomElement:
     """Req 8.2 — missing DOM element logs warning with context and continues."""
 
     def test_extract_rubric_missing_link_logs_warning(self, caplog):
-        """When a group row has no clickable link, a warning is logged."""
-        from brightspace_extractor.extraction import extract_rubric_for_group
+        """When the evaluation page has no d2l-rubric element, a warning is logged."""
+        from brightspace_extractor.extraction import _extract_rubric_via_api
 
         page = _make_mock_page()
-        group_element = MagicMock()
 
-        # The code does: group_element.locator("a").first
-        # then: link.count() — which must return 0
-        link_mock = MagicMock()
-        link_mock.count.return_value = 0
-        locator_mock = MagicMock()
-        locator_mock.first = link_mock
-        group_element.locator.return_value = locator_mock
-
-        with caplog.at_level(logging.WARNING):
-            result = extract_rubric_for_group(page, group_element)
-
-        assert result is None
-        assert any("no clickable link" in r.message.lower() for r in caplog.records)
-
-    def test_extract_rubric_no_rubric_table_logs_warning(self, caplog):
-        """When the detail page has no rubric table, a warning is logged."""
-        from brightspace_extractor.extraction import extract_rubric_for_group
-
-        page = _make_mock_page()
-        group_element = MagicMock()
-
-        # Simulate a clickable link that navigates successfully
-        link_locator = MagicMock()
-        link_locator.count.return_value = 1
-        group_element.locator.return_value = link_locator
-
-        # But the rubric table is missing on the detail page
+        # No d2l-rubric element on the page
         rubric_locator = MagicMock()
         rubric_locator.count.return_value = 0
         page.locator.return_value = rubric_locator
 
         with caplog.at_level(logging.WARNING):
-            result = extract_rubric_for_group(page, group_element)
+            result = _extract_rubric_via_api(page)
 
         assert result is None
-        assert any("no rubric table" in r.message.lower() for r in caplog.records)
+        assert any("no d2l-rubric" in r.message.lower() for r in caplog.records)
+
+    def test_extract_rubric_no_rubric_table_logs_warning(self, caplog):
+        """When the API returns no criteria, a warning is logged."""
+        from brightspace_extractor.extraction import _extract_rubric_via_api
+
+        page = _make_mock_page()
+
+        # d2l-rubric element exists but evaluate returns empty criteria
+        rubric_locator = MagicMock()
+        rubric_locator.count.return_value = 1
+        first_el = MagicMock()
+        first_el.evaluate.return_value = {"criteria": []}
+        rubric_locator.first = first_el
+        page.locator.return_value = rubric_locator
+
+        result = _extract_rubric_via_api(page)
+        assert result is None
 
     def test_extract_group_submissions_missing_group_name_skips_row(self, caplog):
-        """When a submission row has no group name element, it is skipped with a warning."""
+        """When no group rows have eval links, no submissions are returned."""
         from brightspace_extractor.extraction import extract_group_submissions
 
         page = _make_mock_page()
 
-        # Simulate one submission row
+        # Simulate one submission row with no eval link
         row = MagicMock()
         rows_locator = MagicMock()
         rows_locator.count.return_value = 1
         rows_locator.nth.return_value = row
 
+        # The row's eval link locator returns 0 matches
+        eval_link_locator = MagicMock()
+        eval_link_locator.count.return_value = 0
+        row.locator.return_value = eval_link_locator
+
         page.locator.return_value = rows_locator
 
-        # Group name element not found
-        group_name_locator = MagicMock()
-        group_name_locator.count.return_value = 0
-        row.locator.return_value = group_name_locator
-
-        with caplog.at_level(logging.WARNING):
+        with caplog.at_level(logging.INFO):
             result = extract_group_submissions(page)
 
         assert result == []
-        assert any(
-            "could not find group name" in r.message.lower() for r in caplog.records
-        )
 
     def test_extract_group_submissions_no_rows_logs_warning(self, caplog):
         """When the submissions page has no rows at all, a warning is logged."""

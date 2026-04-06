@@ -16,7 +16,7 @@ brightspace-extractor = "brightspace_extractor.cli:app"
 [dependency-groups]
 dev = [
     "hypothesis>=6.151.10",
-    "pre-commit>=4.5.1",
+
     "pytest>=9.0.2",
     "ruff>=0.15.9",
 ]

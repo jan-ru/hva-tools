@@ -4,17 +4,26 @@ from playwright.sync_api import Page
 
 from brightspace_extractor.exceptions import NavigationError
 
-# Brightspace URL patterns
-_CLASS_HOME_URL = "https://brightspace.ru.nl/d2l/home/{class_id}"
-_ASSIGNMENT_SUBMISSIONS_URL = (
-    "https://brightspace.ru.nl/d2l/lms/dropbox/admin/folders_manage.d2l"
-    "?ou={class_id}&db={assignment_id}"
-)
-
+_DEFAULT_BASE_URL = "https://dlo.mijnhva.nl"
 _NAV_TIMEOUT_MS = 30_000
 
 
-def navigate_to_class(page: Page, class_id: str) -> None:
+def _class_home_url(base_url: str, class_id: str) -> str:
+    return f"{base_url}/d2l/home/{class_id}"
+
+
+def _assignment_submissions_url(
+    base_url: str, class_id: str, assignment_id: str
+) -> str:
+    return (
+        f"{base_url}/d2l/lms/dropbox/admin/mark/folder_submissions_users.d2l"
+        f"?db={assignment_id}&ou={class_id}"
+    )
+
+
+def navigate_to_class(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
     """Navigate to the class page using the class identifier.
 
     Args:
@@ -24,23 +33,20 @@ def navigate_to_class(page: Page, class_id: str) -> None:
     Raises:
         NavigationError: If the class page cannot be reached or is not found.
     """
-    url = _CLASS_HOME_URL.format(class_id=class_id)
+    url = _class_home_url(base_url, class_id)
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
     except Exception as exc:
         raise NavigationError(f"Failed to navigate to class {class_id}: {exc}") from exc
 
-    # Brightspace redirects to a generic "not found" or error page when the
-    # class ID is invalid.  Detect this by checking for the course homepage
-    # banner that is only present on a valid class page.
-    if page.locator("d2l-organization-homepage-header").count() == 0:
+    if class_id not in page.url:
         raise NavigationError(
-            f"Class {class_id} not found — the page did not contain a valid class header."
+            f"Class {class_id} not found — the page did not navigate to the expected URL."
         )
 
 
 def navigate_to_assignment_submissions(
-    page: Page, class_id: str, assignment_id: str
+    page: Page, class_id: str, assignment_id: str, *, base_url: str = _DEFAULT_BASE_URL
 ) -> None:
     """Navigate to the assignment submissions page within a class.
 
@@ -53,9 +59,7 @@ def navigate_to_assignment_submissions(
         NavigationError: If the assignment submissions page cannot be reached
             or the assignment is not found.
     """
-    url = _ASSIGNMENT_SUBMISSIONS_URL.format(
-        class_id=class_id, assignment_id=assignment_id
-    )
+    url = _assignment_submissions_url(base_url, class_id, assignment_id)
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
     except Exception as exc:
@@ -63,11 +67,14 @@ def navigate_to_assignment_submissions(
             f"Failed to navigate to assignment {assignment_id} in class {class_id}: {exc}"
         ) from exc
 
-    # If the assignment ID is invalid, Brightspace typically shows an error
-    # banner or redirects.  Check for the submissions table as a positive
-    # indicator that we landed on the right page.
-    if page.locator(".d2l-datalist, .d2l-table").count() == 0:
+    # Wait for the group rows to appear (they load after initial DOM).
+    try:
+        page.wait_for_selector("tr.d_ggl2", timeout=15_000)
+    except Exception:
+        pass
+
+    if page.locator("tr.d_ggl2").count() == 0:
         raise NavigationError(
             f"Assignment {assignment_id} not found in class {class_id} — "
-            "no submissions table detected on the page."
+            "no submissions detected on the page."
         )

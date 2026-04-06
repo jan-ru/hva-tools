@@ -80,20 +80,20 @@ class TestParseGroupSubmissionMalformed:
     def test_missing_students(self):
         raw = _valid_raw()
         del raw["students"]
-        with pytest.raises(ValueError, match="Missing required field"):
-            parse_group_submission(raw)
+        result = parse_group_submission(raw)
+        assert result.students == ()
 
     def test_missing_criteria(self):
         raw = _valid_raw()
         del raw["criteria"]
-        with pytest.raises(ValueError, match="Missing required field"):
-            parse_group_submission(raw)
+        result = parse_group_submission(raw)
+        assert result.rubric.criteria == ()
 
     def test_missing_submission_date(self):
         raw = _valid_raw()
         del raw["submission_date"]
-        with pytest.raises(ValueError, match="Missing required field"):
-            parse_group_submission(raw)
+        result = parse_group_submission(raw)
+        assert result.submission_date == date.today()
 
     def test_bad_date_string(self):
         with pytest.raises(ValueError):
@@ -136,7 +136,7 @@ class TestParseAllSubmissions:
 
     def test_skips_malformed_entries(self):
         good = _valid_raw(group_name="Good")
-        bad = {"group_name": "Bad"}  # missing required fields
+        bad = {"not_a_group": "Bad"}  # missing group_name entirely
         result = parse_all_submissions([good, bad], "HW1", "hw-1")
 
         assert len(result) == 1
@@ -144,8 +144,8 @@ class TestParseAllSubmissions:
         assert result[0].submissions[0].group_name == "Good"
 
     def test_all_malformed_returns_empty(self):
-        bad1 = {"group_name": "A"}
-        bad2 = {"students": ["x"]}
+        bad1 = {"students": ["x"]}  # missing group_name
+        bad2 = {"not_valid": True}  # missing group_name
         result = parse_all_submissions([bad1, bad2], "HW1", "hw-1")
         assert result == []
 

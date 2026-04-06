@@ -8,7 +8,7 @@ connect to browser
     → navigate to class
     → for each assignment:
         → navigate to submissions page
-        → extract raw rubric data (list of dicts)
+        → extract rubric data via Assessments API (list of dicts)
         → parse into Pydantic models
     → aggregate all feedback by group
     → render each group to markdown
@@ -22,7 +22,7 @@ connect to browser
 | `cli.py` | Orchestration | CLI parsing (cyclopts), pipeline wiring |
 | `browser.py` | Impure | CDP connection, auth verification |
 | `navigation.py` | Impure | Brightspace page navigation |
-| `extraction.py` | Impure | DOM scraping → raw dicts |
+| `extraction.py` | Impure | Hypermedia API extraction → raw dicts |
 | `models.py` | Pure | Pydantic frozen domain models |
 | `parsing.py` | Pure | Raw dicts → validated models |
 | `aggregation.py` | Pure | Group-level aggregation across assignments |
@@ -46,7 +46,7 @@ GroupFeedback(group_name, students, assignments: tuple[AssignmentEntry, ...])
 ## Data Flow
 
 ```
-Raw dicts (from DOM)
+Raw dicts (from Assessments API)
     → parsing.py → GroupSubmission
     → collected per assignment → AssignmentFeedback
     → aggregation.py → GroupFeedback
@@ -63,7 +63,7 @@ Raw dicts (from DOM)
 | Class not found | Exit 1 |
 | Assignment not found | Warn + skip |
 | Navigation timeout | Warn + skip |
-| Missing DOM element | Warn + skip |
+| Missing API response | Warn + skip |
 | No rubric for group | Warn + skip |
 
 Setup errors fail fast. Per-item errors degrade gracefully so the tool extracts as much data as possible.
