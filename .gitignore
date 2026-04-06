@@ -20,3 +20,6 @@ wheels/
 
 # Kiro MCP settings (may contain tokens)
 .kiro/settings/
+
+# Extracted output data
+output/
