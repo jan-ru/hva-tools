@@ -167,3 +167,60 @@ class TestExportAllPdfs:
         assert success == 1
         assert failure == 0
         assert mock_convert.call_count == 1
+
+
+class TestExportCombinedPdf:
+    """Tests for export_combined_pdf()."""
+
+    def test_passes_all_md_files_to_pandoc(self, tmp_path: Path) -> None:
+        (tmp_path / "a.md").write_text("# A")
+        (tmp_path / "b.md").write_text("# B")
+        with patch("brightspace_extractor.pdf_export.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0)
+            from brightspace_extractor.pdf_export import export_combined_pdf
+
+            export_combined_pdf(str(tmp_path), output_filename="combined.pdf")
+        cmd = mock_run.call_args[0][0]
+        assert cmd[0] == "pandoc"
+        # Both md files should be in the command
+        md_args = [a for a in cmd if a.endswith(".md")]
+        assert len(md_args) == 2
+        assert "-o" in cmd
+        assert any("combined.pdf" in a for a in cmd)
+
+    def test_output_file_in_same_directory(self, tmp_path: Path) -> None:
+        (tmp_path / "a.md").write_text("# A")
+        with patch("brightspace_extractor.pdf_export.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0)
+            from brightspace_extractor.pdf_export import export_combined_pdf
+
+            export_combined_pdf(str(tmp_path), output_filename="out.pdf")
+        cmd = mock_run.call_args[0][0]
+        out_idx = cmd.index("-o") + 1
+        assert Path(cmd[out_idx]).parent == tmp_path
+
+    def test_raises_on_pandoc_failure(self, tmp_path: Path) -> None:
+        (tmp_path / "a.md").write_text("# A")
+        with patch("brightspace_extractor.pdf_export.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=1, stderr="error")
+            from brightspace_extractor.pdf_export import export_combined_pdf
+
+            with pytest.raises(PdfExportError, match="combined PDF"):
+                export_combined_pdf(str(tmp_path))
+
+    def test_no_md_files_does_nothing(self, tmp_path: Path) -> None:
+        with patch("brightspace_extractor.pdf_export.subprocess.run") as mock_run:
+            from brightspace_extractor.pdf_export import export_combined_pdf
+
+            export_combined_pdf(str(tmp_path))
+        mock_run.assert_not_called()
+
+    def test_custom_output_filename(self, tmp_path: Path) -> None:
+        (tmp_path / "a.md").write_text("# A")
+        with patch("brightspace_extractor.pdf_export.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0)
+            from brightspace_extractor.pdf_export import export_combined_pdf
+
+            export_combined_pdf(str(tmp_path), output_filename="combined-MIS.pdf")
+        cmd = mock_run.call_args[0][0]
+        assert any("combined-MIS.pdf" in a for a in cmd)

@@ -80,6 +80,12 @@ Additional options for `assignments`:
 |---|---|---|
 | `--output-dir` | — | Write an `assignments.md` file to this directory |
 
+Additional options for `groups`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write a `groups.md` file to this directory |
+
 Additional options for `extract`:
 
 | Flag | Default | Description |
@@ -89,6 +95,7 @@ Additional options for `extract`:
 | `--category-config` | — | Path to TOML file mapping category names to criterion patterns |
 | `--pdf` | `false` | Generate PDF output via pandoc + typst |
 | `--col-widths` | `3,1,6` | Column width ratios for PDF tables (three comma-separated integers) |
+| `--combined` | `false` | Also produce a single combined PDF of all groups |
 
 > **Note:** Assignment IDs are the dropbox folder IDs (`db=XXXXXX` in the URL), not the activity iterator IDs. Navigate to the Assignments page in Brightspace and look at the submission links to find them.
 
