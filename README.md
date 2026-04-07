@@ -36,16 +36,31 @@ Then log in to Brightspace manually (SSO, 2FA, etc.). The tool connects to this 
 ### Run
 
 ```bash
+# List assignments for a class (find assignment IDs)
+brightspace-extractor assignments CLASS_ID
+
+# List enrolled students
+brightspace-extractor classlist CLASS_ID
+
+# List groups and their members
+brightspace-extractor groups CLASS_ID
+
+# Extract rubric feedback
 brightspace-extractor extract CLASS_ID ASSIGNMENT_ID_1 ASSIGNMENT_ID_2 ...
 ```
 
-Options:
+Options (shared by all commands):
+
+| Flag | Default | Description |
+|---|---|---|
+| `--cdp-url` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
+| `--base-url` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
+
+Additional options for `extract`:
 
 | Flag | Default | Description |
 |---|---|---|
 | `--output-dir` | `./output` | Directory for generated markdown files |
-| `--cdp-url` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
-| `--base-url` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
 | `--category` | — | Category name to filter rubric criteria (requires `--category-config`) |
 | `--category-config` | — | Path to TOML file mapping category names to criterion patterns |
 | `--pdf` | `false` | Generate PDF output via pandoc + typst |
@@ -54,6 +69,20 @@ Options:
 > **Note:** Assignment IDs are the dropbox folder IDs (`db=XXXXXX` in the URL), not the activity iterator IDs. Navigate to the Assignments page in Brightspace and look at the submission links to find them.
 
 ### Examples
+
+Discover assignment IDs:
+
+```bash
+brightspace-extractor assignments 12345
+```
+
+Output:
+```
+ID           Name
+———————————— ————————————————————————————————————————
+67890        Power BI basis
+67891        Adviesrapport
+```
 
 Basic extraction:
 

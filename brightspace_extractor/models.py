@@ -56,3 +56,30 @@ class GroupFeedback(BaseModel, frozen=True):
     group_name: str
     students: tuple[Student, ...]
     assignments: tuple[AssignmentEntry, ...]
+
+
+# ---------------------------------------------------------------------------
+# Discovery models (assignments, classlist, groups)
+# ---------------------------------------------------------------------------
+
+
+class AssignmentInfo(BaseModel, frozen=True):
+    """A dropbox assignment visible in the class."""
+
+    assignment_id: str
+    name: str
+
+
+class ClassMember(BaseModel, frozen=True):
+    """A student enrolled in the class."""
+
+    name: str
+    username: str
+
+
+class GroupInfo(BaseModel, frozen=True):
+    """A group with its member names."""
+
+    group_name: str
+    category: str
+    members: tuple[str, ...]

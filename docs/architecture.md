@@ -10,9 +10,10 @@ connect to browser
         → navigate to submissions page
         → extract rubric data via Assessments API (list of dicts)
         → parse into Pydantic models
+    → filter criteria by category (optional)
     → aggregate all feedback by group
     → render each group to markdown
-    → write files to output directory
+    → write files to output directory (+ PDF via pandoc/typst if requested)
 ```
 
 ## Module Responsibilities
@@ -22,11 +23,13 @@ connect to browser
 | `cli.py` | Orchestration | CLI parsing (cyclopts), pipeline wiring |
 | `browser.py` | Impure | CDP connection, auth verification |
 | `navigation.py` | Impure | Brightspace page navigation |
-| `extraction.py` | Impure | Hypermedia API extraction → raw dicts |
+| `extraction.py` | Impure | Hypermedia API extraction → raw dicts; HTML scraping for assignments, classlist, and groups |
 | `models.py` | Pure | Pydantic frozen domain models |
 | `parsing.py` | Pure | Raw dicts → validated models |
 | `aggregation.py` | Pure | Group-level aggregation across assignments |
+| `filtering.py` | Pure | Category-based criterion filtering |
 | `serialization.py` | Pure | Models → markdown strings, file writing |
+| `pdf_export.py` | Impure | Pandoc + typst PDF generation |
 | `exceptions.py` | Pure | Custom exception hierarchy |
 
 ## Domain Models
@@ -41,6 +44,11 @@ GroupSubmission(group_name, students, rubric, submission_date)
 AssignmentFeedback(assignment_name, assignment_id, submissions: tuple[GroupSubmission, ...])
 AssignmentEntry(assignment_name, submission_date, rubric)
 GroupFeedback(group_name, students, assignments: tuple[AssignmentEntry, ...])
+
+# Discovery models
+AssignmentInfo(assignment_id, name)
+ClassMember(name, username)
+GroupInfo(group_name, category, members)
 ```
 
 ## Data Flow
@@ -49,9 +57,10 @@ GroupFeedback(group_name, students, assignments: tuple[AssignmentEntry, ...])
 Raw dicts (from Assessments API)
     → parsing.py → GroupSubmission
     → collected per assignment → AssignmentFeedback
+    → filtering.py (optional) → filtered AssignmentFeedback
     → aggregation.py → GroupFeedback
     → serialization.py → markdown string
-    → write to disk → .md file
+    → write to disk → .md file (+ pdf_export.py → .pdf if requested)
 ```
 
 ## Error Strategy

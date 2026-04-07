@@ -175,3 +175,163 @@ def extract_group_submissions(page: Page) -> list[dict]:
         )
 
     return submissions
+
+
+def extract_assignments(page: Page) -> list[dict]:
+    """Extract assignment names and IDs from the dropbox folder list page.
+
+    Returns a list of dicts with keys: assignment_id, name.
+    """
+    assignments: list[dict] = []
+
+    # The dropbox folder list uses alternating row classes d_ggl1 / d_ggl2
+    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
+    try:
+        rows.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No assignment rows found on the page.")
+        return assignments
+
+    row_count = rows.count()
+    logger.info("Found %d assignment row(s).", row_count)
+
+    for i in range(row_count):
+        row = rows.nth(i)
+        # The assignment name is typically in a link within the first <th> or <td>
+        link = row.locator("th a, td a").first
+        if link.count() == 0:
+            continue
+
+        name = (link.text_content() or "").strip()
+        href = link.get_attribute("href") or ""
+
+        # Extract the dropbox folder ID from the href (db=XXXXX parameter)
+        assignment_id = ""
+        if "db=" in href:
+            try:
+                assignment_id = href.split("db=")[1].split("&")[0]
+            except IndexError:
+                pass
+
+        if name and assignment_id:
+            assignments.append({"assignment_id": assignment_id, "name": name})
+
+    return assignments
+
+
+def extract_classlist(page: Page) -> list[dict]:
+    """Extract student names and usernames from the classlist page.
+
+    Returns a list of dicts with keys: name, username.
+    """
+    students: list[dict] = []
+
+    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
+    try:
+        rows.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No classlist rows found on the page.")
+        return students
+
+    row_count = rows.count()
+    logger.info("Found %d classlist row(s).", row_count)
+
+    for i in range(row_count):
+        row = rows.nth(i)
+        cells = row.locator("td")
+        cell_count = cells.count()
+        if cell_count < 2:
+            continue
+
+        # Brightspace classlist: first cell has a context menu, second has the name link
+        name_link = row.locator("td a.d2l-link")
+        if name_link.count() == 0:
+            name_link = row.locator("td a")
+
+        name = ""
+        if name_link.count() > 0:
+            name = (name_link.first.text_content() or "").strip()
+
+        # Username is often in a later cell (varies by Brightspace config)
+        username = ""
+        if cell_count >= 3:
+            username = (cells.nth(2).text_content() or "").strip()
+
+        if name:
+            students.append({"name": name, "username": username})
+
+    return students
+
+
+def extract_groups(page: Page) -> list[dict]:
+    """Extract group names, categories, and members from the groups page.
+
+    Returns a list of dicts with keys: group_name, category, members.
+    """
+    groups: list[dict] = []
+
+    # Groups page has expandable sections per group category
+    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
+    try:
+        rows.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No group rows found on the page.")
+        return groups
+
+    row_count = rows.count()
+    logger.info("Found %d group row(s).", row_count)
+
+    # Track current category from section headers
+    current_category = ""
+
+    all_rows = page.locator("table.d_g tr")
+    total = all_rows.count()
+
+    for i in range(total):
+        row = all_rows.nth(i)
+
+        # Check if this is a category header row
+        header = row.locator("th.d_gn, th.d_gh")
+        if header.count() > 0:
+            text = (header.first.text_content() or "").strip()
+            if text:
+                current_category = text
+            continue
+
+        # Check if this is a data row with group info
+        css_class = row.get_attribute("class") or ""
+        if "d_ggl1" not in css_class and "d_ggl2" not in css_class:
+            continue
+
+        cells = row.locator("td")
+        if cells.count() < 2:
+            continue
+
+        # First cell or link typically has the group name
+        name_el = row.locator("td a, th a").first
+        if name_el.count() == 0:
+            name_el = cells.first
+
+        group_name = (name_el.text_content() or "").strip()
+
+        # Members are often in a subsequent cell, comma-separated
+        members_text = ""
+        if cells.count() >= 2:
+            members_text = (cells.nth(1).text_content() or "").strip()
+
+        members = (
+            tuple(m.strip() for m in members_text.split(",") if m.strip())
+            if members_text
+            else ()
+        )
+
+        if group_name:
+            groups.append(
+                {
+                    "group_name": group_name,
+                    "category": current_category,
+                    "members": members,
+                }
+            )
+
+    return groups

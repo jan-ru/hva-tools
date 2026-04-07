@@ -78,3 +78,51 @@ def navigate_to_assignment_submissions(
             f"Assignment {assignment_id} not found in class {class_id} — "
             "no submissions detected on the page."
         )
+
+
+def navigate_to_dropbox_list(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
+    """Navigate to the assignment (dropbox) folder list for a class.
+
+    Raises NavigationError if the page cannot be reached.
+    """
+    url = f"{base_url}/d2l/lms/dropbox/admin/folders_manage.d2l?ou={class_id}"
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
+    except Exception as exc:
+        raise NavigationError(
+            f"Failed to navigate to assignments list for class {class_id}: {exc}"
+        ) from exc
+
+
+def navigate_to_classlist(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
+    """Navigate to the classlist page for a class.
+
+    Raises NavigationError if the page cannot be reached.
+    """
+    url = f"{base_url}/d2l/lms/classlist/admin/classlist.d2l?ou={class_id}"
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
+    except Exception as exc:
+        raise NavigationError(
+            f"Failed to navigate to classlist for class {class_id}: {exc}"
+        ) from exc
+
+
+def navigate_to_groups(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
+    """Navigate to the groups page for a class.
+
+    Raises NavigationError if the page cannot be reached.
+    """
+    url = f"{base_url}/d2l/lms/group/group_list.d2l?ou={class_id}"
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
+    except Exception as exc:
+        raise NavigationError(
+            f"Failed to navigate to groups for class {class_id}: {exc}"
+        ) from exc
