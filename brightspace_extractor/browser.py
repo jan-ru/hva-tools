@@ -32,12 +32,15 @@ def connect_to_browser(cdp_url: str) -> tuple[Browser, BrowserContext, Page]:
         pw.stop()
         raise ConnectionError(
             f"Could not connect to a browser at {cdp_url}.\n\n"
-            "Make sure you have a Chromium-based browser running with remote debugging enabled:\n\n"
-            '  Edge:   & "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" '
+            "1. Close ALL browser windows (including background processes in the system tray).\n"
+            "   The --remote-debugging-port flag only works if the browser is fully closed first.\n\n"
+            "2. Launch the browser with remote debugging enabled:\n\n"
+            '   Edge:   & "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" '
             "--remote-debugging-port=9222\n"
-            '  Chrome: & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" '
+            '   Chrome: & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" '
             "--remote-debugging-port=9222\n\n"
-            "Then log in to Brightspace manually before running this command."
+            "3. Log in to Brightspace manually, then run this command again.\n\n"
+            "Tip: verify the debug port is active by opening http://localhost:9222 in another browser."
         )
 
     contexts = browser.contexts
