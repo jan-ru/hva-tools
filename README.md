@@ -71,6 +71,12 @@ Additional options for `classlist`:
 |---|---|---|
 | `--output-dir` | — | Write a `classlist.md` file to this directory |
 
+Additional options for `assignments`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write an `assignments.md` file to this directory |
+
 Additional options for `extract`:
 
 | Flag | Default | Description |

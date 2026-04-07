@@ -199,6 +199,10 @@ def assignments(
     base_url: Annotated[
         str, cyclopts.Parameter(help="Brightspace instance base URL")
     ] = "https://dlo.mijnhva.nl",
+    output_dir: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Write an assignments.md file to this directory"),
+    ] = None,
 ) -> None:
     """List assignments (dropbox folders) for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -223,6 +227,16 @@ def assignments(
     for item in items:
         print(f"{item['assignment_id']:<12} {item['name']}")
     print(f"\n{len(items)} assignment(s) found.")
+
+    if output_dir is not None:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        lines = ["# Assignments", "", "| ID | Name |", "|---|---|"]
+        for item in items:
+            lines.append(f"| {item['assignment_id']} | {item['name']} |")
+        lines.append("")
+        (out / "assignments.md").write_text("\n".join(lines), encoding="utf-8")
+        print(f"Written to {out / 'assignments.md'}")
 
 
 @app.command
