@@ -314,6 +314,10 @@ def classlist(
         str | None,
         cyclopts.Parameter(help="Write a classlist.md file to this directory"),
     ] = None,
+    role: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Filter by role (e.g. Student, 'Designing Lecturer')"),
+    ] = "Student",
 ) -> None:
     """List students enrolled in a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -336,6 +340,10 @@ def classlist(
 
     students = extract_classlist(page)
     browser.close()
+
+    # Filter by role (case-insensitive). Use --role="" to show all roles.
+    if role:
+        students = [s for s in students if s["role"].lower() == role.lower()]
 
     if not students:
         print("No students found.")

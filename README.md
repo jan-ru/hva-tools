@@ -73,6 +73,7 @@ Additional options for `classlist`:
 | Flag | Default | Description |
 |---|---|---|
 | `--output-dir` | — | Write a `classlist.md` file to this directory |
+| `--role` | `Student` | Filter by role (e.g. `Student`, `Designing Lecturer`). Pass `--role=""` to show all roles |
 
 Additional options for `assignments`:
 
