@@ -73,3 +73,45 @@ def export_all_pdfs(
             failure += 1
 
     return success, failure
+
+
+def export_combined_pdf(
+    md_dir: str,
+    output_filename: str = "combined.pdf",
+    margins: str = "1.1cm",
+) -> None:
+    """Concatenate all .md files in md_dir into a single PDF.
+
+    Passes all markdown files to a single pandoc invocation so they are
+    rendered as one continuous document.
+
+    Raises PdfExportError on pandoc failure.
+    """
+    md_files = sorted(Path(md_dir).glob("*.md"))
+    if not md_files:
+        logger.warning("No markdown files found in %s for combined PDF.", md_dir)
+        return
+
+    pdf_path = str(Path(md_dir) / output_filename)
+    cmd = [
+        "pandoc",
+        *[str(f) for f in md_files],
+        "-o",
+        pdf_path,
+        "--pdf-engine=typst",
+        "-V",
+        f"margin-top:{margins}",
+        "-V",
+        f"margin-bottom:{margins}",
+        "-V",
+        f"margin-left:{margins}",
+        "-V",
+        f"margin-right:{margins}",
+        "-V",
+        "papersize:a4",
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise PdfExportError(f"pandoc failed for combined PDF: {result.stderr.strip()}")
+
+    logger.info("Combined PDF written to %s", pdf_path)

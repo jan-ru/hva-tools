@@ -40,7 +40,11 @@ from brightspace_extractor.navigation import (
     navigate_to_home,
 )
 from brightspace_extractor.parsing import parse_all_submissions
-from brightspace_extractor.pdf_export import check_pandoc_available, export_all_pdfs
+from brightspace_extractor.pdf_export import (
+    check_pandoc_available,
+    export_all_pdfs,
+    export_combined_pdf,
+)
 from brightspace_extractor.serialization import (
     group_to_filename,
     render_group_markdown_pandoc,
@@ -363,6 +367,10 @@ def extract(
             help="Column width ratios as three comma-separated positive integers (e.g., 3,1,6)"
         ),
     ] = None,
+    combined: Annotated[
+        bool,
+        cyclopts.Parameter(help="Also produce a single combined PDF of all groups"),
+    ] = False,
 ) -> None:
     """Extract rubric feedback for specified class and assignments."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -444,6 +452,14 @@ def extract(
             f"PDF: {success} succeeded, {failure} failed. "
             f"Output written to: {output_dir}"
         )
+
+        if combined:
+            combined_name = f"combined-{category}.pdf" if category else "combined.pdf"
+            try:
+                export_combined_pdf(output_dir, output_filename=combined_name)
+                print(f"Combined PDF: {Path(output_dir) / combined_name}")
+            except PdfExportError as exc:
+                logger.warning("Failed to create combined PDF: %s", exc)
     else:
         write_feedback_files(groups, output_dir)
         print(
