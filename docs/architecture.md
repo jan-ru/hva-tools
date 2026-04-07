@@ -26,7 +26,7 @@ connect to browser
 | `groups` | List groups and members for a class |
 | `extract` | Extract rubric feedback and produce markdown/PDF output |
 
-All commands support a `--config` flag to load shared parameters from a TOML file (`brightspace.toml` by default). See the README for details.
+All commands support a `--config` flag to load shared parameters from a TOML file (`config/brightspace.toml` by default). See the README for details.
 
 ## Module Responsibilities
 
@@ -82,7 +82,7 @@ Raw dicts (from Assessments API)
 
 ## Configuration
 
-The CLI loads shared parameters from `brightspace.toml` (or a path given via `--config`). Resolution order: CLI flag → config file → built-in default.
+The CLI loads shared parameters from `config/brightspace.toml` (or a path given via `--config`). Resolution order: CLI flag → config file → built-in default.
 
 Supported config keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`.
 
