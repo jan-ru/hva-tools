@@ -65,6 +65,12 @@ Additional options for `courses`:
 |---|---|---|
 | `--output-dir` | — | Write a `courses.md` file to this directory |
 
+Additional options for `classlist`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write a `classlist.md` file to this directory |
+
 Additional options for `extract`:
 
 | Flag | Default | Description |

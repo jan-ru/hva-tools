@@ -231,6 +231,10 @@ def classlist(
     base_url: Annotated[
         str, cyclopts.Parameter(help="Brightspace instance base URL")
     ] = "https://dlo.mijnhva.nl",
+    output_dir: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Write a classlist.md file to this directory"),
+    ] = None,
 ) -> None:
     """List students enrolled in a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -255,6 +259,16 @@ def classlist(
         print(f"{s['name']:<30} {s['username']}")
     print(f"\n{len(students)} student(s) found.")
 
+    if output_dir is not None:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        lines = ["# Classlist", "", "| Name | Username |", "|---|---|"]
+        for s in students:
+            lines.append(f"| {s['name']} | {s['username']} |")
+        lines.append("")
+        (out / "classlist.md").write_text("\n".join(lines), encoding="utf-8")
+        print(f"Written to {out / 'classlist.md'}")
+
 
 @app.command
 def groups(
@@ -266,6 +280,10 @@ def groups(
     base_url: Annotated[
         str, cyclopts.Parameter(help="Brightspace instance base URL")
     ] = "https://dlo.mijnhva.nl",
+    output_dir: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Write a groups.md file to this directory"),
+    ] = None,
 ) -> None:
     """List groups and their members for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -292,6 +310,17 @@ def groups(
         members = ", ".join(g["members"]) if g["members"] else "(no members)"
         print(f"  {g['group_name']}: {members}")
     print(f"\n{len(group_list)} group(s) found.")
+
+    if output_dir is not None:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        lines = ["# Groups", "", "| Group | Category | Members |", "|---|---|---|"]
+        for g in group_list:
+            members = ", ".join(g["members"]) if g["members"] else ""
+            lines.append(f"| {g['group_name']} | {g['category']} | {members} |")
+        lines.append("")
+        (out / "groups.md").write_text("\n".join(lines), encoding="utf-8")
+        print(f"Written to {out / 'groups.md'}")
 
 
 @app.command
