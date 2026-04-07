@@ -59,6 +59,12 @@ Options (shared by all commands):
 | `--cdp-url` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
 | `--base-url` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
 
+Additional options for `courses`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write a `courses.md` file to this directory |
+
 Additional options for `extract`:
 
 | Flag | Default | Description |

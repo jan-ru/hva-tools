@@ -135,6 +135,9 @@ def courses(
     base_url: Annotated[
         str, cyclopts.Parameter(help="Brightspace instance base URL")
     ] = "https://dlo.mijnhva.nl",
+    output_dir: Annotated[
+        str | None, cyclopts.Parameter(help="Write a courses.md file to this directory")
+    ] = None,
 ) -> None:
     """List enrolled courses (class IDs) from the Brightspace homepage."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -170,6 +173,16 @@ def courses(
     for item in items:
         print(f"{item['class_id']:<12} {item['name']}")
     print(f"\n{len(items)} course(s) found.")
+
+    if output_dir is not None:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        lines = ["# Courses", "", "| Class ID | Name |", "|---|---|"]
+        for item in items:
+            lines.append(f"| {item['class_id']} | {item['name']} |")
+        lines.append("")
+        (out / "courses.md").write_text("\n".join(lines), encoding="utf-8")
+        print(f"Written to {out / 'courses.md'}")
 
 
 @app.command
