@@ -282,77 +282,97 @@ def extract_classlist(page: Page) -> list[dict]:
     return students
 
 
+def _scrape_group_table(page: Page) -> list[dict]:
+    """Scrape group rows from the currently visible group table.
+
+    Returns list of dicts with keys: group_name, members_enrolled, members_max.
+    """
+    rows_out: list[dict] = []
+    table = page.locator("table.d2l-table.d_gl")
+    if table.count() == 0:
+        return rows_out
+
+    rows = table.locator("tr:has(th.d_ich)")
+    row_count = rows.count()
+
+    for i in range(row_count):
+        row = rows.nth(i)
+        name_el = row.locator("th.d_ich a.d2l-link")
+        group_name = (
+            (name_el.first.text_content() or "").strip() if name_el.count() > 0 else ""
+        )
+
+        # Members column is the first td.d_gn, shows e.g. "4/4"
+        members_cell = row.locator("td.d_gn").first
+        members_text = (
+            (members_cell.text_content() or "").strip()
+            if members_cell.count() > 0
+            else ""
+        )
+
+        if group_name:
+            rows_out.append({"group_name": group_name, "members": members_text})
+
+    return rows_out
+
+
 def extract_groups(page: Page) -> list[dict]:
-    """Extract group names, categories, and members from the groups page.
+    """Extract group names and member counts from the groups page.
+
+    Iterates through all categories in the category dropdown, scraping
+    the group table for each one.
 
     Returns a list of dicts with keys: group_name, category, members.
     """
     groups: list[dict] = []
 
-    # Groups page has expandable sections per group category
-    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
-    try:
-        rows.first.wait_for(timeout=15_000)
-    except Exception:
-        logger.warning("No group rows found on the page.")
+    # Find the category filter dropdown (d2l-group-section-filter or a <select>)
+    # The page uses a custom element; fall back to a regular select
+    cat_select = page.locator("select.d2l-select").filter(has=page.locator("option"))
+
+    # Find the select that contains category names (not page-size selects)
+    category_select = None
+    for i in range(cat_select.count()):
+        sel = cat_select.nth(i)
+        # Check if any option text looks like a category (not "X per page")
+        first_opt = sel.locator("option").first
+        text = (first_opt.text_content() or "").strip()
+        if "per page" not in text and "of" not in text:
+            category_select = sel
+            break
+
+    if category_select is None:
+        # No category dropdown — try scraping the single visible table
+        logger.info("No category dropdown found, scraping visible table.")
+        table_rows = _scrape_group_table(page)
+        for r in table_rows:
+            groups.append({**r, "category": ""})
         return groups
 
-    row_count = rows.count()
-    logger.info("Found %d group row(s).", row_count)
+    # Collect all category option values and labels
+    options = category_select.locator("option")
+    opt_count = options.count()
+    categories: list[tuple[str, str]] = []
+    for i in range(opt_count):
+        opt = options.nth(i)
+        value = opt.get_attribute("value") or ""
+        label = (opt.text_content() or "").strip()
+        if value:
+            categories.append((value, label))
 
-    # Track current category from section headers
-    current_category = ""
+    logger.info("Found %d group categor(ies).", len(categories))
 
-    all_rows = page.locator("table.d_g tr")
-    total = all_rows.count()
+    for value, label in categories:
+        logger.info("Switching to category: %s", label)
+        category_select.select_option(value)
+        page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(1500)
 
-    for i in range(total):
-        row = all_rows.nth(i)
+        table_rows = _scrape_group_table(page)
+        for r in table_rows:
+            groups.append({**r, "category": label})
 
-        # Check if this is a category header row
-        header = row.locator("th.d_gn, th.d_gh")
-        if header.count() > 0:
-            text = (header.first.text_content() or "").strip()
-            if text:
-                current_category = text
-            continue
-
-        # Check if this is a data row with group info
-        css_class = row.get_attribute("class") or ""
-        if "d_ggl1" not in css_class and "d_ggl2" not in css_class:
-            continue
-
-        cells = row.locator("td")
-        if cells.count() < 2:
-            continue
-
-        # First cell or link typically has the group name
-        name_el = row.locator("td a, th a").first
-        if name_el.count() == 0:
-            name_el = cells.first
-
-        group_name = (name_el.text_content() or "").strip()
-
-        # Members are often in a subsequent cell, comma-separated
-        members_text = ""
-        if cells.count() >= 2:
-            members_text = (cells.nth(1).text_content() or "").strip()
-
-        members = (
-            tuple(m.strip() for m in members_text.split(",") if m.strip())
-            if members_text
-            else ()
-        )
-
-        if group_name:
-            groups.append(
-                {
-                    "group_name": group_name,
-                    "category": current_category,
-                    "members": members,
-                }
-            )
-
+    logger.info("Found %d group(s) total.", len(groups))
     return groups
 
 

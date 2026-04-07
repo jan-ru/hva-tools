@@ -79,11 +79,11 @@ class ClassMember(BaseModel, frozen=True):
 
 
 class GroupInfo(BaseModel, frozen=True):
-    """A group with its member names."""
+    """A group within a category."""
 
     group_name: str
     category: str
-    members: tuple[str, ...]
+    members: str  # e.g. "4/4" (enrolled/max)
 
 
 class CourseInfo(BaseModel, frozen=True):

@@ -312,17 +312,21 @@ def groups(
         if g["category"] != current_category:
             current_category = g["category"]
             print(f"\n[{current_category}]" if current_category else "")
-        members = ", ".join(g["members"]) if g["members"] else "(no members)"
-        print(f"  {g['group_name']}: {members}")
+        members = g["members"] if g["members"] else ""
+        print(f"  {g['group_name']:<20} {members}")
     print(f"\n{len(group_list)} group(s) found.")
 
     if output_dir is not None:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
-        lines = ["# Groups", "", "| Group | Category | Members |", "|---|---|---|"]
+        lines = [
+            "# Groups",
+            "",
+            "| Category | Group | Members |",
+            "|---|---|---|",
+        ]
         for g in group_list:
-            members = ", ".join(g["members"]) if g["members"] else ""
-            lines.append(f"| {g['group_name']} | {g['category']} | {members} |")
+            lines.append(f"| {g['category']} | {g['group_name']} | {g['members']} |")
         lines.append("")
         (out / "groups.md").write_text("\n".join(lines), encoding="utf-8")
         print(f"Written to {out / 'groups.md'}")
