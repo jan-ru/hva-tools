@@ -299,8 +299,8 @@ def _scrape_group_table(page: Page) -> list[dict]:
             (name_el.first.text_content() or "").strip() if name_el.count() > 0 else ""
         )
 
-        # Members column is the first td.d_gn, shows e.g. "4/4"
-        members_cell = row.locator("td.d_gn").first
+        # Members column is the first td.d_gc, shows e.g. "4/4"
+        members_cell = row.locator("td.d_gc").first
         members_text = (
             (members_cell.text_content() or "").strip()
             if members_cell.count() > 0
