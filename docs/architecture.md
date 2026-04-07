@@ -23,7 +23,7 @@ connect to browser
 | `cli.py` | Orchestration | CLI parsing (cyclopts), pipeline wiring |
 | `browser.py` | Impure | CDP connection, auth verification |
 | `navigation.py` | Impure | Brightspace page navigation |
-| `extraction.py` | Impure | Hypermedia API extraction → raw dicts; HTML scraping for assignments, classlist, and groups |
+| `extraction.py` | Impure | Hypermedia API extraction → raw dicts; HTML scraping for courses, assignments, classlist, and groups |
 | `models.py` | Pure | Pydantic frozen domain models |
 | `parsing.py` | Pure | Raw dicts → validated models |
 | `aggregation.py` | Pure | Group-level aggregation across assignments |

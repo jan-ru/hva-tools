@@ -335,3 +335,57 @@ def extract_groups(page: Page) -> list[dict]:
             )
 
     return groups
+
+
+def extract_courses(page: Page) -> list[dict]:
+    """Extract course names and class IDs from the Brightspace homepage.
+
+    Looks for course card links that point to /d2l/home/{class_id}.
+
+    Returns a list of dicts with keys: class_id, name.
+    """
+    courses: list[dict] = []
+
+    # Brightspace renders enrolled courses as card widgets or list items
+    # linking to /d2l/home/{ou}. Try multiple selectors for different layouts.
+    # The "My Courses" widget often uses d2l-enrollment-card or similar components.
+    # Fall back to any anchor whose href matches the /d2l/home/DIGITS pattern.
+    links = page.locator("a[href*='/d2l/home/']")
+
+    try:
+        links.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No course links found on the homepage.")
+        return courses
+
+    link_count = links.count()
+    seen: set[str] = set()
+
+    for i in range(link_count):
+        link = links.nth(i)
+        href = link.get_attribute("href") or ""
+        name = (link.text_content() or "").strip()
+
+        # Extract class_id from /d2l/home/{class_id}
+        if "/d2l/home/" not in href:
+            continue
+
+        segment = href.split("/d2l/home/")[1].split("?")[0].split("/")[0]
+        if not segment.isdigit():
+            continue
+
+        class_id = segment
+
+        # Deduplicate (same course may appear in multiple links)
+        if class_id in seen:
+            continue
+        seen.add(class_id)
+
+        # Skip empty names or generic navigation text
+        if not name or len(name) > 200:
+            name = f"(class {class_id})"
+
+        courses.append({"class_id": class_id, "name": name})
+
+    logger.info("Found %d course(s).", len(courses))
+    return courses

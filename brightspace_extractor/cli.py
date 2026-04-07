@@ -22,6 +22,7 @@ from brightspace_extractor.exceptions import (
 from brightspace_extractor.extraction import (
     extract_assignments,
     extract_classlist,
+    extract_courses,
     extract_group_submissions,
     extract_groups,
 )
@@ -36,6 +37,7 @@ from brightspace_extractor.navigation import (
     navigate_to_classlist,
     navigate_to_dropbox_list,
     navigate_to_groups,
+    navigate_to_home,
 )
 from brightspace_extractor.parsing import parse_all_submissions
 from brightspace_extractor.pdf_export import check_pandoc_available, export_all_pdfs
@@ -122,6 +124,52 @@ def _parse_col_widths(raw: str) -> tuple[int, int, int]:
 # ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
+
+
+@app.command
+def courses(
+    *,
+    cdp_url: Annotated[
+        str, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = "http://localhost:9222",
+    base_url: Annotated[
+        str, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = "https://dlo.mijnhva.nl",
+) -> None:
+    """List enrolled courses (class IDs) from the Brightspace homepage."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+    try:
+        browser, _context, page = connect_to_browser(cdp_url)
+    except ConnectionError as exc:
+        _fail_fast(exc)
+
+    try:
+        if not verify_authentication(page):
+            raise AuthenticationError(
+                "Browser session is not authenticated. "
+                "Please log in to Brightspace manually."
+            )
+    except AuthenticationError as exc:
+        _fail_fast(exc, browser)
+
+    try:
+        navigate_to_home(page, base_url=base_url)
+    except NavigationError as exc:
+        _fail_fast(exc, browser)
+
+    items = extract_courses(page)
+    browser.close()
+
+    if not items:
+        print("No courses found.")
+        return
+
+    print(f"\n{'Class ID':<12} Name")
+    print(f"{'—' * 12} {'—' * 50}")
+    for item in items:
+        print(f"{item['class_id']:<12} {item['name']}")
+    print(f"\n{len(items)} course(s) found.")
 
 
 @app.command

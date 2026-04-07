@@ -12,6 +12,18 @@ def _class_home_url(base_url: str, class_id: str) -> str:
     return f"{base_url}/d2l/home/{class_id}"
 
 
+def navigate_to_home(page: Page, *, base_url: str = _DEFAULT_BASE_URL) -> None:
+    """Navigate to the Brightspace homepage (My Courses).
+
+    Raises NavigationError if the page cannot be reached.
+    """
+    url = f"{base_url}/d2l/home"
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
+    except Exception as exc:
+        raise NavigationError(f"Failed to navigate to Brightspace home: {exc}") from exc
+
+
 def _assignment_submissions_url(
     base_url: str, class_id: str, assignment_id: str
 ) -> str:

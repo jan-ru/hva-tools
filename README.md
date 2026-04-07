@@ -36,6 +36,9 @@ Then log in to Brightspace manually (SSO, 2FA, etc.). The tool connects to this 
 ### Run
 
 ```bash
+# List enrolled courses (find class IDs)
+brightspace-extractor courses
+
 # List assignments for a class (find assignment IDs)
 brightspace-extractor assignments CLASS_ID
 
@@ -69,6 +72,20 @@ Additional options for `extract`:
 > **Note:** Assignment IDs are the dropbox folder IDs (`db=XXXXXX` in the URL), not the activity iterator IDs. Navigate to the Assignments page in Brightspace and look at the submission links to find them.
 
 ### Examples
+
+Discover class IDs:
+
+```bash
+brightspace-extractor courses
+```
+
+Output:
+```
+Class ID     Name
+———————————— ——————————————————————————————————————————————————
+12345        Data & AI – Semester 2
+12346        Cloud Infrastructure
+```
 
 Discover assignment IDs:
 

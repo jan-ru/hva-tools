@@ -83,3 +83,10 @@ class GroupInfo(BaseModel, frozen=True):
     group_name: str
     category: str
     members: tuple[str, ...]
+
+
+class CourseInfo(BaseModel, frozen=True):
+    """A course (org unit) visible on the homepage."""
+
+    class_id: str
+    name: str
