@@ -28,11 +28,17 @@ def connect_to_browser(cdp_url: str) -> tuple[Browser, BrowserContext, Page]:
     pw = sync_playwright().start()
     try:
         browser = pw.chromium.connect_over_cdp(cdp_url)
-    except Exception as exc:
+    except Exception:
         pw.stop()
         raise ConnectionError(
-            f"Failed to connect to browser at {cdp_url}: {exc}"
-        ) from exc
+            f"Could not connect to a browser at {cdp_url}.\n\n"
+            "Make sure you have a Chromium-based browser running with remote debugging enabled:\n\n"
+            '  Edge:   & "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" '
+            "--remote-debugging-port=9222\n"
+            '  Chrome: & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" '
+            "--remote-debugging-port=9222\n\n"
+            "Then log in to Brightspace manually before running this command."
+        )
 
     contexts = browser.contexts
     if not contexts:

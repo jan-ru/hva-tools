@@ -133,8 +133,9 @@ def _connect_and_verify(cdp_url: str) -> tuple[Browser, Page]:
     try:
         if not verify_authentication(page):
             raise AuthenticationError(
-                "Browser session is not authenticated. "
-                "Please log in to Brightspace manually."
+                "Browser session is not authenticated.\n\n"
+                "Please log in to Brightspace in your browser first (SSO, 2FA, etc.),\n"
+                "then run this command again."
             )
     except AuthenticationError as exc:
         _fail_fast(exc, browser)
