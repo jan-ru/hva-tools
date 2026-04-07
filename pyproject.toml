@@ -2,6 +2,7 @@
 name = "brightspace-feedback-extractor"
 version = "0.1.0"
 description = "CLI tool to extract rubric feedback from Brightspace DLO using Playwright"
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

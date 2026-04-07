@@ -269,4 +269,4 @@ prek install
 
 ## License
 
-Not yet specified.
+MIT — see [LICENSE](LICENSE).
