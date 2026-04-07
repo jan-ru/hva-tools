@@ -17,6 +17,7 @@ wheels/
 
 # pytest
 .pytest_cache/
+.coverage
 
 # Kiro MCP settings (may contain tokens)
 .kiro/settings/
