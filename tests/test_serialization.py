@@ -3,47 +3,44 @@
 from datetime import date
 
 from hypothesis import given, settings
-from hypothesis import strategies as st
 
 from brightspace_extractor.models import (
     AssignmentEntry,
-    Criterion,
     GroupFeedback,
-    RubricFeedback,
-    Student,
 )
 from brightspace_extractor.serialization import (
     render_group_markdown,
     write_feedback_files,
 )
+from tests.conftest import (
+    ALICE,
+    BOB,
+    group_feedback_st,
+    make_criterion,
+    make_rubric,
+)
+
 
 # ---------------------------------------------------------------------------
-# Hypothesis strategies (reused from test_aggregation pattern)
+# Helpers
 # ---------------------------------------------------------------------------
 
-student_st = st.builds(Student, name=st.text(min_size=1, max_size=30))
-criterion_st = st.builds(
-    Criterion,
-    name=st.text(min_size=1, max_size=30),
-    score=st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False),
-    feedback=st.text(max_size=100),
-)
-rubric_st = st.builds(
-    RubricFeedback,
-    criteria=st.lists(criterion_st, min_size=1, max_size=5).map(tuple),
-)
-assignment_entry_st = st.builds(
-    AssignmentEntry,
-    assignment_name=st.text(min_size=1, max_size=30),
-    submission_date=st.dates(min_value=date(2020, 1, 1), max_value=date(2026, 12, 31)),
-    rubric=rubric_st,
-)
-group_feedback_st = st.builds(
-    GroupFeedback,
-    group_name=st.text(min_size=1, max_size=30),
-    students=st.lists(student_st, min_size=1, max_size=4).map(tuple),
-    assignments=st.lists(assignment_entry_st, min_size=1, max_size=4).map(tuple),
-)
+
+def _group_feedback() -> GroupFeedback:
+    return GroupFeedback(
+        group_name="Team Alpha",
+        students=(ALICE, BOB),
+        assignments=(
+            AssignmentEntry(
+                assignment_name="HW1",
+                submission_date=date(2025, 3, 1),
+                rubric=make_rubric(
+                    make_criterion("Clarity", 9.0, "Very clear"),
+                    make_criterion("Depth", 7.5, "Could go deeper"),
+                ),
+            ),
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -79,38 +76,6 @@ def test_markdown_contains_all_required_info(gf: GroupFeedback) -> None:
 # ---------------------------------------------------------------------------
 # Unit tests for serialization
 # ---------------------------------------------------------------------------
-
-_ALICE = Student(name="Alice")
-_BOB = Student(name="Bob")
-
-
-def _criterion(
-    name: str = "Quality", score: float = 8.0, feedback: str = "Good"
-) -> Criterion:
-    return Criterion(name=name, score=score, feedback=feedback)
-
-
-def _rubric(*criteria: Criterion) -> RubricFeedback:
-    if not criteria:
-        criteria = (_criterion(),)
-    return RubricFeedback(criteria=criteria)
-
-
-def _group_feedback() -> GroupFeedback:
-    return GroupFeedback(
-        group_name="Team Alpha",
-        students=(_ALICE, _BOB),
-        assignments=(
-            AssignmentEntry(
-                assignment_name="HW1",
-                submission_date=date(2025, 3, 1),
-                rubric=_rubric(
-                    _criterion("Clarity", 9.0, "Very clear"),
-                    _criterion("Depth", 7.5, "Could go deeper"),
-                ),
-            ),
-        ),
-    )
 
 
 class TestRenderGroupMarkdown:
@@ -162,17 +127,17 @@ class TestRenderGroupMarkdown:
     def test_multiple_assignments(self) -> None:
         gf = GroupFeedback(
             group_name="Team Beta",
-            students=(_ALICE,),
+            students=(ALICE,),
             assignments=(
                 AssignmentEntry(
                     assignment_name="HW1",
                     submission_date=date(2025, 1, 15),
-                    rubric=_rubric(_criterion("A", 5.0, "ok")),
+                    rubric=make_rubric(make_criterion("A", 5.0, "ok")),
                 ),
                 AssignmentEntry(
                     assignment_name="HW2",
                     submission_date=date(2025, 2, 20),
-                    rubric=_rubric(_criterion("B", 10.0, "great")),
+                    rubric=make_rubric(make_criterion("B", 10.0, "great")),
                 ),
             ),
         )
@@ -191,12 +156,12 @@ class TestWriteFeedbackFiles:
             _group_feedback(),
             GroupFeedback(
                 group_name="Team Beta",
-                students=(_BOB,),
+                students=(BOB,),
                 assignments=(
                     AssignmentEntry(
                         assignment_name="HW1",
                         submission_date=date(2025, 3, 1),
-                        rubric=_rubric(),
+                        rubric=make_rubric(),
                     ),
                 ),
             ),

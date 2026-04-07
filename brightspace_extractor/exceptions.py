@@ -19,3 +19,11 @@ class NavigationError(ExtractorError):
 
 class ExtractionError(ExtractorError):
     """Failed to extract expected data from a page."""
+
+
+class ConfigError(ExtractorError):
+    """Invalid or missing category configuration."""
+
+
+class PdfExportError(ExtractorError):
+    """PDF conversion failed."""

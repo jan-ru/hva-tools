@@ -12,3 +12,6 @@
 - Treat the application as a data pipeline: scrape → parse into Pydantic models → aggregate → serialize to output.
 - Output serialization (markdown, duckdb, etc.) should be separate pure functions that operate on the same domain models.
 - Keep domain models and extraction logic decoupled from serialization logic for extensibility.
+
+## Testing
+- Use `pytest-cov` for code coverage measurement. Install it as a dev dependency and run tests with `--cov` to generate coverage reports (e.g., `uv run pytest --cov=brightspace_extractor`).
