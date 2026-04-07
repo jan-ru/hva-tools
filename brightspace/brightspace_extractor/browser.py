@@ -1,4 +1,9 @@
-"""Browser connection and authentication verification via Playwright CDP."""
+"""Browser connection and authentication verification via Playwright CDP.
+
+Connects to any Chromium-based browser (Chrome, Edge, Brave, …) that has been
+launched with ``--remote-debugging-port``.  Microsoft Edge is the recommended
+default for HvA environments.
+"""
 
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 
@@ -6,7 +11,10 @@ from brightspace_extractor.exceptions import ConnectionError
 
 
 def connect_to_browser(cdp_url: str) -> tuple[Browser, BrowserContext, Page]:
-    """Connect to an existing browser via Playwright CDP using the sync API.
+    """Connect to an existing Chromium-based browser via CDP.
+
+    Works with any Chromium-based browser (Edge, Chrome, Brave, …) that was
+    started with ``--remote-debugging-port=<port>``.
 
     Args:
         cdp_url: The CDP endpoint URL (e.g. "http://localhost:9222").
@@ -39,6 +47,12 @@ def connect_to_browser(cdp_url: str) -> tuple[Browser, BrowserContext, Page]:
         pw.stop()
         raise ConnectionError("No pages found in the browser context.")
 
+    # Try to find a Brightspace page (any page on a d2l domain).
+    for p in pages:
+        if "/d2l/" in p.url:
+            return browser, context, p
+
+    # Fall back to the first page if no Brightspace tab is found.
     return browser, context, pages[0]
 
 
@@ -55,9 +69,12 @@ def verify_authentication(page: Page) -> bool:
         True if authenticated, False otherwise.
     """
     try:
-        locator = page.locator(
-            "d2l-navigation-main-header .d2l-navigation-header-right d2l-dropdown"
-        )
-        return locator.count() > 0
+        # Check for elements only present when authenticated.  The exact
+        # Brightspace web-component names vary across versions, so we try
+        # a few common indicators.
+        for selector in ("d2l-navigation-main-header", ".d2l-body", "d2l-dropdown"):
+            if page.locator(selector).count() > 0:
+                return True
+        return False
     except Exception:
         return False
