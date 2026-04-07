@@ -33,233 +33,51 @@ uv sync
 
 Then log in to Brightspace manually (SSO, 2FA, etc.). The tool connects to this session — it does not automate login.
 
-### Run
+### Usage
 
 ```bash
 # List enrolled courses (find class IDs)
 brightspace-extractor courses
 
-# List assignments for a class (find assignment IDs)
+# List assignments for a class
 brightspace-extractor assignments CLASS_ID
 
 # List enrolled students
 brightspace-extractor classlist CLASS_ID
 
-# List groups and their members
+# List groups
 brightspace-extractor groups CLASS_ID
 
 # Extract rubric feedback
 brightspace-extractor extract CLASS_ID ASSIGNMENT_ID_1 ASSIGNMENT_ID_2 ...
 ```
 
-Options (shared by all commands):
-
-| Flag | Default | Description |
-|---|---|---|
-| `--config` | `config/brightspace.toml` | Path to TOML config file (auto-detected relative to current directory) |
-| `--cdp-url` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
-| `--base-url` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
-
-> **Tip:** Any CLI flag can also be set in a `brightspace.toml` config file. CLI flags take precedence over config values. See [Configuration File](#configuration-file) below.
-
-Additional options for `courses`:
-
-| Flag | Default | Description |
-|---|---|---|
-| `--output-dir` | — | Write a `courses.md` file to this directory |
-
-Additional options for `classlist`:
-
-| Flag | Default | Description |
-|---|---|---|
-| `--output-dir` | — | Write a `classlist.md` file to this directory |
-| `--role` | `Student` | Filter by role (e.g. `Student`, `Designing Lecturer`). Pass `--role=""` to show all roles |
-
-Additional options for `assignments`:
-
-| Flag | Default | Description |
-|---|---|---|
-| `--output-dir` | — | Write an `assignments.md` file to this directory |
-
-Additional options for `groups`:
-
-| Flag | Default | Description |
-|---|---|---|
-| `--output-dir` | — | Write a `groups.md` file to this directory |
-
-Additional options for `extract`:
-
-| Flag | Default | Description |
-|---|---|---|
-| `--output-dir` | `./output` | Directory for generated markdown files |
-| `--category` | — | Category name to filter rubric criteria (requires `--category-config`) |
-| `--category-config` | — | Path to TOML file mapping category names to criterion patterns |
-| `--pdf` | `false` | Generate PDF output via pandoc + typst |
-| `--col-widths` | `3,1,6` | Column width ratios for PDF tables (three comma-separated integers) |
-| `--combined` | `false` | Also produce a single combined PDF of all groups |
-
-> **Note:** Assignment IDs are the dropbox folder IDs (`db=XXXXXX` in the URL), not the activity iterator IDs. Navigate to the Assignments page in Brightspace and look at the submission links to find them.
-
-### Examples
-
-Discover class IDs:
-
-```bash
-brightspace-extractor courses
-```
-
-Output:
-```
-Class ID     Name
-———————————— ——————————————————————————————————————————————————
-12345        Data & AI – Semester 2
-12346        Cloud Infrastructure
-```
-
-Discover assignment IDs:
-
-```bash
-brightspace-extractor assignments 12345
-```
-
-Output:
-```
-ID           Name
-———————————— ————————————————————————————————————————
-67890        Power BI basis
-67891        Adviesrapport
-```
-
-Basic extraction:
-
-```bash
-brightspace-extractor extract 12345 67890 67891 --output-dir ./feedback
-```
-
-Filtered PDF export for a specific category:
-
-```bash
-brightspace-extractor extract 12345 67890 67891 \
-  --category MIS \
-  --category-config categories.toml \
-  --pdf \
-  --col-widths 3,1,6 \
-  --output-dir ./feedback
-```
-
-This produces one `.md` (and optionally `.pdf`) file per group in `./feedback/`:
-
-```
-feedback/
-├── team-alpha.md
-├── team-alpha.pdf
-├── team-beta.md
-├── team-beta.pdf
-└── ...
-```
-
-## Configuration File
-
-Store shared parameters in TOML config files under the `config/` directory. The tool auto-loads `config/brightspace.toml` for shared defaults (base URL, CDP endpoint). Create per-course configs for course-specific settings:
-
-```
-config/
-├── brightspace.toml          # shared defaults (auto-loaded)
-├── brightspace.example.toml  # template (committed to git)
-├── Data&Control.toml         # course-specific
-├── BigData.toml
-└── GRC.toml
-```
-
-Example course config (`config/Data&Control.toml`):
-
-```toml
-class_id = "698557"
-output_dir = "./output/data&control"
-category_config = "categories.toml"
-```
-
-Use `--config` to select a course:
+Use `--config` to load per-course settings from a TOML file:
 
 ```bash
 brightspace-extractor classlist --config "config/Data&Control.toml"
-brightspace-extractor assignments --config config/BigData.toml
+brightspace-extractor extract 698557 336741 336743 --category MIS --pdf --combined
 ```
 
-Without `--config`, only `config/brightspace.toml` is loaded (shared defaults). CLI arguments always override config values.
+See [docs/commands.md](docs/commands.md) for all options and examples.
 
-Supported keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`.
+## Documentation
 
-## Environment Variables
-
-All config keys can also be set via environment variables with a `BRIGHTSPACE_` prefix:
-
-| Variable | Equivalent config key |
+| Document | Description |
 |---|---|
-| `BRIGHTSPACE_CLASS_ID` | `class_id` |
-| `BRIGHTSPACE_BASE_URL` | `base_url` |
-| `BRIGHTSPACE_CDP_URL` | `cdp_url` |
-| `BRIGHTSPACE_OUTPUT_DIR` | `output_dir` |
-| `BRIGHTSPACE_CATEGORY_CONFIG` | `category_config` |
-
-Resolution order: CLI flag → environment variable → config file → built-in default.
-
-## Category Filtering
-
-You can filter rubric criteria by category using a TOML config file. Each category maps to a list of substring patterns matched case-insensitively against criterion names:
-
-```toml
-[categories]
-MIS = ["informatie behoefte", "Dashboard", "Cloud"]
-MAC = ["kostprijs", "budget omzet"]
-```
-
-Use `--category MIS --category-config categories.toml` to include only criteria matching the MIS patterns.
-
-## Output Format
-
-Each markdown file contains:
-
-- Group name as heading
-- Student names
-- Per-assignment rubric table (criterion, score, feedback) ordered chronologically
-
-See [docs/output-format.md](docs/output-format.md) for a full example.
-
-## Architecture
-
-The tool follows a functional data pipeline:
-
-```
-browser → extract via Assessments API → parse into models → filter (optional) → aggregate by group → serialize to markdown/PDF → write files
-```
-
-- Pure core: `models.py`, `parsing.py`, `aggregation.py`, `serialization.py`, `filtering.py` — no I/O, no mutation
-- Impure edges: `browser.py`, `navigation.py`, `extraction.py`, `pdf_export.py` — Playwright interaction, subprocess calls
-- Orchestration: `cli.py` — wires everything together
-
-All domain models are immutable Pydantic `BaseModel(frozen=True)` instances.
-
-See [docs/architecture.md](docs/architecture.md) for details.
+| [docs/commands.md](docs/commands.md) | Full CLI reference with all flags and examples |
+| [docs/configuration.md](docs/configuration.md) | Config files, environment variables, category filtering |
+| [docs/architecture.md](docs/architecture.md) | Pipeline design, module responsibilities, data flow |
+| [docs/output-format.md](docs/output-format.md) | Markdown output format with examples |
+| [docs/entity-relationship.md](docs/entity-relationship.md) | Mermaid ER diagram of domain models |
 
 ## Development
 
 ```bash
-# Install with dev dependencies
-uv sync
-
-# Run tests
-uv run pytest
-
-# Run tests with coverage
-uv run pytest --cov=brightspace_extractor
-
-# Run only property-based tests
-uv run pytest -k "property"
-
-# Git hooks (using prek, a fast Rust-based pre-commit replacement)
-uv tool install prek
-prek install
+uv sync                                          # install with dev dependencies
+uv run pytest                                    # run tests
+uv run pytest --cov=brightspace_extractor        # run with coverage
+uv run pytest -k "property"                      # property-based tests only
 ```
 
 ## Error Handling
