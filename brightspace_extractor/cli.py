@@ -63,6 +63,10 @@ app = cyclopts.App(
 # Shared helpers
 # ---------------------------------------------------------------------------
 
+_CDP_DEFAULT = "http://localhost:9222"
+_BASE_URL_DEFAULT = "https://dlo.mijnhva.nl"
+_DEFAULT_CONFIG_PATH = "config/brightspace.toml"
+
 
 def _fail_fast(exc: Exception, browser=None) -> None:
     """Log an error and exit. Optionally close the browser first."""
@@ -72,13 +76,10 @@ def _fail_fast(exc: Exception, browser=None) -> None:
     sys.exit(1)
 
 
-_DEFAULT_CONFIG_PATH = "config/brightspace.toml"
-
-
 def _load_config(config_path: str | None = None) -> dict:
     """Load shared parameters from a TOML config file.
 
-    Looks for ``brightspace.toml`` in the current directory by default.
+    Looks for ``config/brightspace.toml`` by default.
     Returns an empty dict if the file doesn't exist (unless an explicit
     path was given, in which case it raises).
     """
@@ -104,10 +105,8 @@ def _cfg(config: dict, key: str, cli_value, default=None):
     return config.get(key, default)
 
 
-def _connect_and_auth(
-    cdp_url: str, base_url: str, class_id: str
-) -> tuple[Browser, Page]:
-    """Connect to browser, verify auth, navigate to class. Returns (browser, page).
+def _connect_and_verify(cdp_url: str) -> tuple[Browser, Page]:
+    """Connect to browser and verify authentication. Returns (browser, page).
 
     Calls sys.exit(1) on any failure.
     """
@@ -125,12 +124,99 @@ def _connect_and_auth(
     except AuthenticationError as exc:
         _fail_fast(exc, browser)
 
+    return browser, page  # type: ignore[return-value]
+
+
+def _connect_and_auth(
+    cdp_url: str, base_url: str, class_id: str
+) -> tuple[Browser, Page]:
+    """Connect to browser, verify auth, navigate to class. Returns (browser, page).
+
+    Calls sys.exit(1) on any failure.
+    """
+    browser, page = _connect_and_verify(cdp_url)
+
     try:
         navigate_to_class(page, class_id, base_url=base_url)
     except NavigationError as exc:
         _fail_fast(exc, browser)
 
-    return browser, page  # type: ignore[return-value]
+    return browser, page
+
+
+def _resolve_common(
+    config: str | None,
+    cdp_url: str | None,
+    base_url: str | None,
+    class_id: str | None = None,
+    output_dir: str | None = None,
+    output_dir_default: str | None = None,
+) -> tuple[dict, str, str, str | None, str | None]:
+    """Load config and resolve common CLI parameters.
+
+    Returns (cfg, cdp_url, base_url, class_id, output_dir).
+    """
+    cfg = _load_config(config)
+    return (
+        cfg,
+        _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT),
+        _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT),
+        _cfg(cfg, "class_id", class_id),
+        _cfg(cfg, "output_dir", output_dir, output_dir_default),
+    )
+
+
+def _require_class_id(class_id: str | None) -> str:
+    """Exit with error if class_id is missing."""
+    if not class_id:
+        logger.error("class_id is required (pass as argument or set in config file)")
+        sys.exit(1)
+    return class_id
+
+
+def _print_and_write_table(
+    items: list[dict],
+    columns: list[tuple[str, str, int]],
+    output_dir: str | None,
+    filename: str,
+    title: str,
+) -> None:
+    """Print a table to stdout and optionally write a markdown file.
+
+    Args:
+        items: List of dicts to display.
+        columns: List of (header, dict_key, width) tuples.
+        output_dir: Directory to write markdown file (None to skip).
+        filename: Markdown filename (e.g. "classlist.md").
+        title: Markdown heading (e.g. "# Classlist").
+    """
+    if not items:
+        print(f"No {title.lower().lstrip('# ')} found.")
+        return
+
+    # Print to stdout
+    header = "  ".join(f"{col[0]:<{col[2]}}" for col in columns)
+    separator = "  ".join("—" * col[2] for col in columns)
+    print(f"\n{header}")
+    print(separator)
+    for item in items:
+        row = "  ".join(f"{str(item[col[1]]):<{col[2]}}" for col in columns)
+        print(row)
+    print(f"\n{len(items)} item(s) found.")
+
+    # Write markdown
+    if output_dir is not None:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        md_header = " | ".join(col[0] for col in columns)
+        md_sep = "|".join("---" for _ in columns)
+        lines = [title, "", f"| {md_header} |", f"|{md_sep}|"]
+        for item in items:
+            md_row = " | ".join(str(item[col[1]]) for col in columns)
+            lines.append(f"| {md_row} |")
+        lines.append("")
+        (out / filename).write_text("\n".join(lines), encoding="utf-8")
+        print(f"Written to {out / filename}")
 
 
 def _parse_col_widths(raw: str) -> tuple[int, int, int]:
@@ -162,15 +248,12 @@ def _parse_col_widths(raw: str) -> tuple[int, int, int]:
 # Commands
 # ---------------------------------------------------------------------------
 
-_CDP_DEFAULT = "http://localhost:9222"
-_BASE_URL_DEFAULT = "https://dlo.mijnhva.nl"
-
 
 @app.command
 def courses(
     *,
     config: Annotated[
-        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
     ] = None,
     cdp_url: Annotated[
         str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
@@ -184,24 +267,11 @@ def courses(
 ) -> None:
     """List enrolled courses (class IDs) from the Brightspace homepage."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    cfg = _load_config(config)
-    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
-    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
-    output_dir = _cfg(cfg, "output_dir", output_dir)
+    _cfg_data, cdp_url, base_url, _, output_dir = _resolve_common(
+        config, cdp_url, base_url, output_dir=output_dir
+    )
 
-    try:
-        browser, _context, page = connect_to_browser(cdp_url)
-    except ConnectionError as exc:
-        _fail_fast(exc)
-
-    try:
-        if not verify_authentication(page):
-            raise AuthenticationError(
-                "Browser session is not authenticated. "
-                "Please log in to Brightspace manually."
-            )
-    except AuthenticationError as exc:
-        _fail_fast(exc, browser)
+    browser, page = _connect_and_verify(cdp_url)
 
     try:
         navigate_to_home(page, base_url=base_url)
@@ -211,25 +281,13 @@ def courses(
     items = extract_courses(page)
     browser.close()
 
-    if not items:
-        print("No courses found.")
-        return
-
-    print(f"\n{'Class ID':<12} Name")
-    print(f"{'—' * 12} {'—' * 50}")
-    for item in items:
-        print(f"{item['class_id']:<12} {item['name']}")
-    print(f"\n{len(items)} course(s) found.")
-
-    if output_dir is not None:
-        out = Path(output_dir)
-        out.mkdir(parents=True, exist_ok=True)
-        lines = ["# Courses", "", "| Class ID | Name |", "|---|---|"]
-        for item in items:
-            lines.append(f"| {item['class_id']} | {item['name']} |")
-        lines.append("")
-        (out / "courses.md").write_text("\n".join(lines), encoding="utf-8")
-        print(f"Written to {out / 'courses.md'}")
+    _print_and_write_table(
+        items,
+        [("Class ID", "class_id", 12), ("Name", "name", 50)],
+        output_dir,
+        "courses.md",
+        "# Courses",
+    )
 
 
 @app.command
@@ -239,7 +297,7 @@ def assignments(
     ] = None,
     *,
     config: Annotated[
-        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
     ] = None,
     cdp_url: Annotated[
         str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
@@ -254,15 +312,10 @@ def assignments(
 ) -> None:
     """List assignments (dropbox folders) for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    cfg = _load_config(config)
-    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
-    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
-    class_id = _cfg(cfg, "class_id", class_id)
-    output_dir = _cfg(cfg, "output_dir", output_dir)
-
-    if not class_id:
-        logger.error("class_id is required (pass as argument or set in config file)")
-        sys.exit(1)
+    _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir
+    )
+    class_id = _require_class_id(class_id)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -274,25 +327,13 @@ def assignments(
     items = extract_assignments(page)
     browser.close()
 
-    if not items:
-        print("No assignments found.")
-        return
-
-    print(f"\n{'ID':<12} Name")
-    print(f"{'—' * 12} {'—' * 40}")
-    for item in items:
-        print(f"{item['assignment_id']:<12} {item['name']}")
-    print(f"\n{len(items)} assignment(s) found.")
-
-    if output_dir is not None:
-        out = Path(output_dir)
-        out.mkdir(parents=True, exist_ok=True)
-        lines = ["# Assignments", "", "| ID | Name |", "|---|---|"]
-        for item in items:
-            lines.append(f"| {item['assignment_id']} | {item['name']} |")
-        lines.append("")
-        (out / "assignments.md").write_text("\n".join(lines), encoding="utf-8")
-        print(f"Written to {out / 'assignments.md'}")
+    _print_and_write_table(
+        items,
+        [("ID", "assignment_id", 12), ("Name", "name", 40)],
+        output_dir,
+        "assignments.md",
+        "# Assignments",
+    )
 
 
 @app.command
@@ -302,7 +343,7 @@ def classlist(
     ] = None,
     *,
     config: Annotated[
-        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
     ] = None,
     cdp_url: Annotated[
         str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
@@ -321,15 +362,10 @@ def classlist(
 ) -> None:
     """List students enrolled in a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    cfg = _load_config(config)
-    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
-    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
-    class_id = _cfg(cfg, "class_id", class_id)
-    output_dir = _cfg(cfg, "output_dir", output_dir)
-
-    if not class_id:
-        logger.error("class_id is required (pass as argument or set in config file)")
-        sys.exit(1)
+    _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir
+    )
+    class_id = _require_class_id(class_id)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -341,34 +377,20 @@ def classlist(
     students = extract_classlist(page)
     browser.close()
 
-    # Filter by role (case-insensitive). Use --role="" to show all roles.
     if role:
         students = [s for s in students if s["role"].lower() == role.lower()]
 
-    if not students:
-        print("No students found.")
-        return
-
-    print(f"\n{'Name':<30} {'Org Defined ID':<16} Role")
-    print(f"{'—' * 30} {'—' * 16} {'—' * 20}")
-    for s in students:
-        print(f"{s['name']:<30} {s['org_defined_id']:<16} {s['role']}")
-    print(f"\n{len(students)} student(s) found.")
-
-    if output_dir is not None:
-        out = Path(output_dir)
-        out.mkdir(parents=True, exist_ok=True)
-        lines = [
-            "# Classlist",
-            "",
-            "| Name | Org Defined ID | Role |",
-            "|---|---|---|",
-        ]
-        for s in students:
-            lines.append(f"| {s['name']} | {s['org_defined_id']} | {s['role']} |")
-        lines.append("")
-        (out / "classlist.md").write_text("\n".join(lines), encoding="utf-8")
-        print(f"Written to {out / 'classlist.md'}")
+    _print_and_write_table(
+        students,
+        [
+            ("Name", "name", 30),
+            ("Org Defined ID", "org_defined_id", 16),
+            ("Role", "role", 20),
+        ],
+        output_dir,
+        "classlist.md",
+        "# Classlist",
+    )
 
 
 @app.command
@@ -378,7 +400,7 @@ def groups(
     ] = None,
     *,
     config: Annotated[
-        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
     ] = None,
     cdp_url: Annotated[
         str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
@@ -393,15 +415,10 @@ def groups(
 ) -> None:
     """List groups and their members for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    cfg = _load_config(config)
-    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
-    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
-    class_id = _cfg(cfg, "class_id", class_id)
-    output_dir = _cfg(cfg, "output_dir", output_dir)
-
-    if not class_id:
-        logger.error("class_id is required (pass as argument or set in config file)")
-        sys.exit(1)
+    _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir
+    )
+    class_id = _require_class_id(class_id)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -413,33 +430,17 @@ def groups(
     group_list = extract_groups(page)
     browser.close()
 
-    if not group_list:
-        print("No groups found.")
-        return
-
-    current_category = ""
-    for g in group_list:
-        if g["category"] != current_category:
-            current_category = g["category"]
-            print(f"\n[{current_category}]" if current_category else "")
-        members = g["members"] if g["members"] else ""
-        print(f"  {g['group_name']:<20} {members}")
-    print(f"\n{len(group_list)} group(s) found.")
-
-    if output_dir is not None:
-        out = Path(output_dir)
-        out.mkdir(parents=True, exist_ok=True)
-        lines = [
-            "# Groups",
-            "",
-            "| Category | Group | Members |",
-            "|---|---|---|",
-        ]
-        for g in group_list:
-            lines.append(f"| {g['category']} | {g['group_name']} | {g['members']} |")
-        lines.append("")
-        (out / "groups.md").write_text("\n".join(lines), encoding="utf-8")
-        print(f"Written to {out / 'groups.md'}")
+    _print_and_write_table(
+        group_list,
+        [
+            ("Category", "category", 20),
+            ("Group", "group_name", 20),
+            ("Members", "members", 10),
+        ],
+        output_dir,
+        "groups.md",
+        "# Groups",
+    )
 
 
 @app.command
@@ -452,7 +453,7 @@ def extract(
     ] = None,
     *,
     config: Annotated[
-        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
     ] = None,
     output_dir: Annotated[
         str | None, cyclopts.Parameter(help="Output directory for markdown files")
@@ -485,15 +486,11 @@ def extract(
 ) -> None:
     """Extract rubric feedback for specified class and assignments."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    cfg = _load_config(config)
-    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
-    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
-    class_id = _cfg(cfg, "class_id", class_id)
-    output_dir = _cfg(cfg, "output_dir", output_dir, "./output")
+    cfg, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir, output_dir_default="./output"
+    )
+    class_id = _require_class_id(class_id)
 
-    if not class_id:
-        logger.error("class_id is required (pass as argument or set in config file)")
-        sys.exit(1)
     if not assignment_ids:
         logger.error(
             "assignment_ids are required (pass as arguments or set in config file)"
@@ -519,7 +516,6 @@ def extract(
         except ConfigError as exc:
             _fail_fast(exc)
 
-    # --- connect, auth, navigate to class ---
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
     # --- loop assignments: extract → parse (graceful degradation) ---
@@ -551,12 +547,12 @@ def extract(
             filter_assignment_feedback(af, patterns) for af in all_feedbacks
         ]
 
-    groups = aggregate_by_group(all_feedbacks)
+    groups_result = aggregate_by_group(all_feedbacks)
 
     if pdf:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
-        for gf in groups:
+        for gf in groups_result:
             filename = group_to_filename(gf.group_name, suffix=category)
             md_content = render_group_markdown_pandoc(
                 gf,
@@ -572,7 +568,7 @@ def extract(
 
         success, failure = export_all_pdfs(output_dir)
         print(
-            f"\nDone. {len(groups)} group(s) processed. "
+            f"\nDone. {len(groups_result)} group(s) processed. "
             f"PDF: {success} succeeded, {failure} failed. "
             f"Output written to: {output_dir}"
         )
@@ -585,9 +581,10 @@ def extract(
             except PdfExportError as exc:
                 logger.warning("Failed to create combined PDF: %s", exc)
     else:
-        write_feedback_files(groups, output_dir)
+        write_feedback_files(groups_result, output_dir)
         print(
-            f"\nDone. {len(groups)} group(s) processed. Output written to: {output_dir}"
+            f"\nDone. {len(groups_result)} group(s) processed. "
+            f"Output written to: {output_dir}"
         )
 
     browser.close()
