@@ -104,3 +104,25 @@ def navigate_to_groups(
         f"{base_url}/d2l/lms/group/group_list.d2l?ou={class_id}",
         f"Failed to navigate to groups for class {class_id}",
     )
+
+
+def navigate_to_quizzes(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
+    """Navigate to the quizzes management page for a class."""
+    _navigate_to(
+        page,
+        f"{base_url}/d2l/lms/quizzing/admin/quizzes_manage.d2l?ou={class_id}",
+        f"Failed to navigate to quizzes for class {class_id}",
+    )
+
+
+def navigate_to_rubrics(
+    page: Page, class_id: str, *, base_url: str = _DEFAULT_BASE_URL
+) -> None:
+    """Navigate to the rubrics list page for a class."""
+    _navigate_to(
+        page,
+        f"{base_url}/d2l/lp/rubrics/list.d2l?ou={class_id}",
+        f"Failed to navigate to rubrics for class {class_id}",
+    )

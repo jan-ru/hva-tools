@@ -28,6 +28,8 @@ from brightspace_extractor.extraction import (
     extract_courses,
     extract_group_submissions,
     extract_groups,
+    extract_quizzes,
+    extract_rubrics,
 )
 from brightspace_extractor.filtering import (
     filter_assignment_feedback,
@@ -41,6 +43,8 @@ from brightspace_extractor.navigation import (
     navigate_to_dropbox_list,
     navigate_to_groups,
     navigate_to_home,
+    navigate_to_quizzes,
+    navigate_to_rubrics,
 )
 from brightspace_extractor.parsing import parse_all_submissions
 from brightspace_extractor.pdf_export import (
@@ -460,6 +464,104 @@ def groups(
         output_dir,
         "groups.md",
         "# Groups",
+    )
+
+
+@app.command
+def quizzes(
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
+    *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
+    ] = None,
+    cdp_url: Annotated[
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
+    base_url: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
+    output_dir: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Write a quizzes.md file to this directory"),
+    ] = None,
+) -> None:
+    """List quizzes for a class."""
+    _setup_logging()
+    _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir
+    )
+    class_id = _require_class_id(class_id)
+
+    browser, page = _connect_and_auth(cdp_url, base_url, class_id)
+
+    try:
+        navigate_to_quizzes(page, class_id, base_url=base_url)
+    except NavigationError as exc:
+        _fail_fast(exc, browser)
+
+    items = extract_quizzes(page)
+    browser.close()
+
+    _print_and_write_table(
+        items,
+        [("ID", "quiz_id", 10), ("Name", "name", 50)],
+        output_dir,
+        "quizzes.md",
+        "# Quizzes",
+    )
+
+
+@app.command
+def rubrics(
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
+    *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to config TOML file")
+    ] = None,
+    cdp_url: Annotated[
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
+    base_url: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
+    output_dir: Annotated[
+        str | None,
+        cyclopts.Parameter(help="Write a rubrics.md file to this directory"),
+    ] = None,
+) -> None:
+    """List rubrics for a class."""
+    _setup_logging()
+    _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
+        config, cdp_url, base_url, class_id, output_dir
+    )
+    class_id = _require_class_id(class_id)
+
+    browser, page = _connect_and_auth(cdp_url, base_url, class_id)
+
+    try:
+        navigate_to_rubrics(page, class_id, base_url=base_url)
+    except NavigationError as exc:
+        _fail_fast(exc, browser)
+
+    items = extract_rubrics(page)
+    browser.close()
+
+    _print_and_write_table(
+        items,
+        [
+            ("ID", "rubric_id", 8),
+            ("Name", "name", 40),
+            ("Type", "type", 12),
+            ("Scoring", "scoring_method", 16),
+            ("Status", "status", 12),
+        ],
+        output_dir,
+        "rubrics.md",
+        "# Rubrics",
     )
 
 

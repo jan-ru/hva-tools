@@ -91,3 +91,20 @@ class CourseInfo(BaseModel, frozen=True):
 
     class_id: str
     name: str
+
+
+class QuizInfo(BaseModel, frozen=True):
+    """A quiz visible in the course."""
+
+    quiz_id: str
+    name: str
+
+
+class RubricInfo(BaseModel, frozen=True):
+    """A rubric definition in the course."""
+
+    rubric_id: str
+    name: str
+    rubric_type: str
+    scoring_method: str
+    status: str

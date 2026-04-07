@@ -24,6 +24,8 @@ connect to browser
 | `assignments` | List assignments (dropbox folders) for a class |
 | `classlist` | List students enrolled in a class |
 | `groups` | List groups and members for a class |
+| `quizzes` | List quizzes for a class |
+| `rubrics` | List rubrics for a class |
 | `extract` | Extract rubric feedback and produce markdown/PDF output |
 
 All commands support a `--config` flag to load shared parameters from a TOML file (`config/brightspace.toml` by default). See the README for details.
@@ -65,6 +67,8 @@ CourseInfo(class_id, name)
 AssignmentInfo(assignment_id, name)
 ClassMember(name, org_defined_id, role)
 GroupInfo(group_name, category, members)
+QuizInfo(quiz_id, name)
+RubricInfo(rubric_id, name, rubric_type, scoring_method, status)
 ```
 
 ## Data Flow

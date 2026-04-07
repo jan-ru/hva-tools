@@ -59,6 +59,30 @@ brightspace-extractor groups CLASS_ID
 |---|---|---|
 | `--output-dir` | — | Write a `groups.md` file to this directory |
 
+## quizzes
+
+List quizzes for a class.
+
+```bash
+brightspace-extractor quizzes CLASS_ID
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write a `quizzes.md` file to this directory |
+
+## rubrics
+
+List rubrics for a class.
+
+```bash
+brightspace-extractor rubrics CLASS_ID
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir` | — | Write a `rubrics.md` file to this directory |
+
 ## extract
 
 Extract rubric feedback for specified class and assignments.

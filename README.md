@@ -48,6 +48,12 @@ brightspace-extractor classlist CLASS_ID
 # List groups
 brightspace-extractor groups CLASS_ID
 
+# List quizzes
+brightspace-extractor quizzes CLASS_ID
+
+# List rubrics
+brightspace-extractor rubrics CLASS_ID
+
 # Extract rubric feedback
 brightspace-extractor extract CLASS_ID ASSIGNMENT_ID_1 ASSIGNMENT_ID_2 ...
 ```

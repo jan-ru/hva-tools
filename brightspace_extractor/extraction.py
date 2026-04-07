@@ -425,3 +425,110 @@ def extract_courses(page: Page) -> list[dict]:
 
     logger.info("Found %d course(s).", len(courses))
     return courses
+
+
+def extract_quizzes(page: Page) -> list[dict]:
+    """Extract quiz names and IDs from the quizzes management page.
+
+    Finds all quiz edit links (href containing qi=XXXXX) and extracts
+    the quiz name and ID.
+
+    Returns a list of dicts with keys: quiz_id, name.
+    """
+    quizzes: list[dict] = []
+
+    links = page.locator("a[href*='quiz_newedit_properties.d2l']")
+    try:
+        links.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No quiz links found on the page.")
+        return quizzes
+
+    link_count = links.count()
+    logger.info("Found %d quiz link(s).", link_count)
+
+    for i in range(link_count):
+        link = links.nth(i)
+        name = (link.text_content() or "").strip()
+        href = link.get_attribute("href") or ""
+
+        quiz_id = ""
+        if "qi=" in href:
+            try:
+                quiz_id = href.split("qi=")[1].split("&")[0]
+            except IndexError:
+                pass
+
+        if name and quiz_id:
+            quizzes.append({"quiz_id": quiz_id, "name": name})
+
+    return quizzes
+
+
+def extract_rubrics(page: Page) -> list[dict]:
+    """Extract rubric names, IDs, types, scoring methods, and statuses.
+
+    Finds all rubric rows in the rubrics list table.
+
+    Returns a list of dicts with keys: rubric_id, name, type, scoring_method, status.
+    """
+    rubrics: list[dict] = []
+
+    table = page.locator("table.d2l-table.d_gl")
+    if table.count() == 0:
+        logger.warning("No rubrics table found on the page.")
+        return rubrics
+
+    rows = table.locator("tr:has(th.d_ich)")
+    try:
+        rows.first.wait_for(timeout=15_000)
+    except Exception:
+        logger.warning("No rubric rows found on the page.")
+        return rubrics
+
+    row_count = rows.count()
+    logger.info("Found %d rubric row(s).", row_count)
+
+    for i in range(row_count):
+        row = rows.nth(i)
+
+        # Name and ID from th.d_ich > a
+        name_el = row.locator("th.d_ich a.d2l-link")
+        name = (
+            (name_el.first.text_content() or "").strip() if name_el.count() > 0 else ""
+        )
+        href = (
+            (name_el.first.get_attribute("href") or "") if name_el.count() > 0 else ""
+        )
+
+        rubric_id = ""
+        if "rubricId=" in href:
+            try:
+                rubric_id = href.split("rubricId=")[1].split("&")[0]
+            except IndexError:
+                pass
+
+        # Remaining columns are in <td> elements with <span> text
+        spans = row.locator("td span")
+        span_count = spans.count()
+
+        rubric_type = (
+            (spans.nth(0).text_content() or "").strip() if span_count >= 1 else ""
+        )
+        scoring_method = (
+            (spans.nth(1).text_content() or "").strip() if span_count >= 2 else ""
+        )
+        status = (spans.nth(2).text_content() or "").strip() if span_count >= 3 else ""
+
+        if name and rubric_id:
+            rubrics.append(
+                {
+                    "rubric_id": rubric_id,
+                    "name": name,
+                    "type": rubric_type,
+                    "scoring_method": scoring_method,
+                    "status": status,
+                }
+            )
+
+    return rubrics

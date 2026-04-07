@@ -79,6 +79,19 @@ erDiagram
         string category
         string members
     }
+
+    QuizInfo {
+        string quiz_id
+        string name
+    }
+
+    RubricInfo {
+        string rubric_id
+        string name
+        string rubric_type
+        string scoring_method
+        string status
+    }
 ```
 
 ## Data flow
@@ -89,4 +102,4 @@ The pipeline models connect through two paths:
 
 2. **Aggregation path** — `aggregate_by_group()` pivots the data so `GroupFeedback` contains `AssignmentEntry`s (one per assignment the group submitted to). The `RubricFeedback` and `Student` models are shared between both paths.
 
-The discovery models (`CourseInfo`, `AssignmentInfo`, `ClassMember`, `GroupInfo`) are independent — they represent data scraped from Brightspace listing pages and are not part of the feedback pipeline.
+The discovery models (`CourseInfo`, `AssignmentInfo`, `ClassMember`, `GroupInfo`, `QuizInfo`, `RubricInfo`) are independent — they represent data scraped from Brightspace listing pages and are not part of the feedback pipeline.
