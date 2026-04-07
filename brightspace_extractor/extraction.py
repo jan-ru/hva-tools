@@ -180,32 +180,29 @@ def extract_group_submissions(page: Page) -> list[dict]:
 def extract_assignments(page: Page) -> list[dict]:
     """Extract assignment names and IDs from the dropbox folder list page.
 
+    Finds all submission links (href containing folder_submissions_users.d2l)
+    and extracts the assignment name and dropbox folder ID.
+
     Returns a list of dicts with keys: assignment_id, name.
     """
     assignments: list[dict] = []
 
-    # The dropbox folder list uses alternating row classes d_ggl1 / d_ggl2
-    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
+    # Each assignment has a link to its submissions page with db=XXXXX
+    links = page.locator("a[href*='folder_submissions_users.d2l']")
     try:
-        rows.first.wait_for(timeout=15_000)
+        links.first.wait_for(timeout=15_000)
     except Exception:
-        logger.warning("No assignment rows found on the page.")
+        logger.warning("No assignment links found on the page.")
         return assignments
 
-    row_count = rows.count()
-    logger.info("Found %d assignment row(s).", row_count)
+    link_count = links.count()
+    logger.info("Found %d assignment link(s).", link_count)
 
-    for i in range(row_count):
-        row = rows.nth(i)
-        # The assignment name is typically in a link within the first <th> or <td>
-        link = row.locator("th a, td a").first
-        if link.count() == 0:
-            continue
-
+    for i in range(link_count):
+        link = links.nth(i)
         name = (link.text_content() or "").strip()
         href = link.get_attribute("href") or ""
 
-        # Extract the dropbox folder ID from the href (db=XXXXX parameter)
         assignment_id = ""
         if "db=" in href:
             try:
