@@ -23,3 +23,10 @@ wheels/
 
 # Extracted output data
 output/
+
+# Config files (user-specific, except example)
+config/*.toml
+!config/brightspace.example.toml
+
+# Playwright MCP artifacts
+.playwright-mcp/

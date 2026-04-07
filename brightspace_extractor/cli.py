@@ -72,7 +72,7 @@ def _fail_fast(exc: Exception, browser=None) -> None:
     sys.exit(1)
 
 
-_DEFAULT_CONFIG_PATH = "brightspace.toml"
+_DEFAULT_CONFIG_PATH = "config/brightspace.toml"
 
 
 def _load_config(config_path: str | None = None) -> dict:
