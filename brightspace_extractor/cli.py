@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import tomllib
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Annotated
 import cyclopts
 from playwright.sync_api import Browser, Page
 
+from brightspace_extractor import __version__
 from brightspace_extractor.aggregation import aggregate_by_group
 from brightspace_extractor.browser import connect_to_browser, verify_authentication
 from brightspace_extractor.exceptions import (
@@ -55,7 +57,9 @@ from brightspace_extractor.serialization import (
 logger = logging.getLogger(__name__)
 
 app = cyclopts.App(
-    name="brightspace-extractor", help="Extract rubric feedback from Brightspace DLO."
+    name="brightspace-extractor",
+    help="Extract rubric feedback from Brightspace DLO.",
+    version=__version__,
 )
 
 
@@ -66,6 +70,7 @@ app = cyclopts.App(
 _CDP_DEFAULT = "http://localhost:9222"
 _BASE_URL_DEFAULT = "https://dlo.mijnhva.nl"
 _DEFAULT_CONFIG_PATH = "config/brightspace.toml"
+_ENV_PREFIX = "BRIGHTSPACE_"
 
 
 def _fail_fast(exc: Exception, browser=None) -> None:
@@ -99,9 +104,15 @@ def _load_config(config_path: str | None = None) -> dict:
 
 
 def _cfg(config: dict, key: str, cli_value, default=None):
-    """Return CLI value if provided, else config value, else default."""
+    """Resolve a parameter value with precedence: CLI → env var → config file → default.
+
+    Environment variables are looked up as ``BRIGHTSPACE_{KEY}`` (uppercase).
+    """
     if cli_value is not None:
         return cli_value
+    env_value = os.environ.get(f"{_ENV_PREFIX}{key.upper()}")
+    if env_value is not None:
+        return env_value
     return config.get(key, default)
 
 
@@ -174,6 +185,15 @@ def _require_class_id(class_id: str | None) -> str:
     return class_id
 
 
+def _setup_logging() -> None:
+    """Configure logging: INFO+ to stderr so stdout stays clean for data output."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s: %(message)s",
+        stream=sys.stderr,
+    )
+
+
 def _print_and_write_table(
     items: list[dict],
     columns: list[tuple[str, str, int]],
@@ -191,10 +211,10 @@ def _print_and_write_table(
         title: Markdown heading (e.g. "# Classlist").
     """
     if not items:
-        print(f"No {title.lower().lstrip('# ')} found.")
+        logger.info("No %s found.", title.lower().lstrip("# "))
         return
 
-    # Print to stdout
+    # Data output → stdout
     header = "  ".join(f"{col[0]:<{col[2]}}" for col in columns)
     separator = "  ".join("—" * col[2] for col in columns)
     print(f"\n{header}")
@@ -216,7 +236,7 @@ def _print_and_write_table(
             lines.append(f"| {md_row} |")
         lines.append("")
         (out / filename).write_text("\n".join(lines), encoding="utf-8")
-        print(f"Written to {out / filename}")
+        logger.info("Written to %s", out / filename)
 
 
 def _parse_col_widths(raw: str) -> tuple[int, int, int]:
@@ -266,7 +286,7 @@ def courses(
     ] = None,
 ) -> None:
     """List enrolled courses (class IDs) from the Brightspace homepage."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    _setup_logging()
     _cfg_data, cdp_url, base_url, _, output_dir = _resolve_common(
         config, cdp_url, base_url, output_dir=output_dir
     )
@@ -311,7 +331,7 @@ def assignments(
     ] = None,
 ) -> None:
     """List assignments (dropbox folders) for a class."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    _setup_logging()
     _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
         config, cdp_url, base_url, class_id, output_dir
     )
@@ -361,7 +381,7 @@ def classlist(
     ] = "Student",
 ) -> None:
     """List students enrolled in a class."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    _setup_logging()
     _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
         config, cdp_url, base_url, class_id, output_dir
     )
@@ -414,7 +434,7 @@ def groups(
     ] = None,
 ) -> None:
     """List groups and their members for a class."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    _setup_logging()
     _cfg_data, cdp_url, base_url, class_id, output_dir = _resolve_common(
         config, cdp_url, base_url, class_id, output_dir
     )
@@ -485,7 +505,7 @@ def extract(
     ] = False,
 ) -> None:
     """Extract rubric feedback for specified class and assignments."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    _setup_logging()
     cfg, cdp_url, base_url, class_id, output_dir = _resolve_common(
         config, cdp_url, base_url, class_id, output_dir, output_dir_default="./output"
     )
@@ -530,11 +550,11 @@ def extract(
             continue
 
         assignment_name = assignment_id
-        print(f"Processing assignment: {assignment_name}")
+        logger.info("Processing assignment: %s", assignment_name)
 
         raw_submissions = extract_group_submissions(page)
         for raw in raw_submissions:
-            print(f"  Processing group: {raw.get('group_name', '<unknown>')}")
+            logger.info("  Processing group: %s", raw.get("group_name", "<unknown>"))
 
         feedbacks = parse_all_submissions(
             raw_submissions, assignment_name, assignment_id
@@ -567,24 +587,27 @@ def extract(
             _fail_fast(exc, browser)
 
         success, failure = export_all_pdfs(output_dir)
-        print(
-            f"\nDone. {len(groups_result)} group(s) processed. "
-            f"PDF: {success} succeeded, {failure} failed. "
-            f"Output written to: {output_dir}"
+        logger.info(
+            "Done. %d group(s) processed. PDF: %d succeeded, %d failed. Output: %s",
+            len(groups_result),
+            success,
+            failure,
+            output_dir,
         )
 
         if combined:
             combined_name = f"combined-{category}.pdf" if category else "combined.pdf"
             try:
                 export_combined_pdf(output_dir, output_filename=combined_name)
-                print(f"Combined PDF: {Path(output_dir) / combined_name}")
+                logger.info("Combined PDF: %s", Path(output_dir) / combined_name)
             except PdfExportError as exc:
                 logger.warning("Failed to create combined PDF: %s", exc)
     else:
         write_feedback_files(groups_result, output_dir)
-        print(
-            f"\nDone. {len(groups_result)} group(s) processed. "
-            f"Output written to: {output_dir}"
+        logger.info(
+            "Done. %d group(s) processed. Output: %s",
+            len(groups_result),
+            output_dir,
         )
 
     browser.close()

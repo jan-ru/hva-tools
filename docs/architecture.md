@@ -82,7 +82,7 @@ Raw dicts (from Assessments API)
 
 ## Configuration
 
-The CLI loads shared parameters from `config/brightspace.toml` (or a path given via `--config`). Resolution order: CLI flag → config file → built-in default.
+The CLI loads shared parameters from `config/brightspace.toml` (or a path given via `--config`). Parameters can also be set via environment variables with a `BRIGHTSPACE_` prefix. Resolution order: CLI flag → env var → config file → built-in default.
 
 Supported config keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`.
 

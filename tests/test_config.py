@@ -80,3 +80,37 @@ class TestCfg:
 
     def test_cli_zero_still_wins(self) -> None:
         assert _cfg({"key": "config"}, "key", 0) == 0
+
+
+class TestCfgEnvVars:
+    """Tests for environment variable support in _cfg()."""
+
+    def test_env_var_used_when_cli_is_none(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_CLASS_ID", "env_value")
+        assert _cfg({}, "class_id", None) == "env_value"
+
+    def test_cli_wins_over_env_var(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_CLASS_ID", "env_value")
+        assert _cfg({}, "class_id", "cli_value") == "cli_value"
+
+    def test_env_var_wins_over_config(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_CLASS_ID", "env_value")
+        assert _cfg({"class_id": "config_value"}, "class_id", None) == "env_value"
+
+    def test_config_used_when_no_env_var(self) -> None:
+        assert _cfg({"class_id": "config_value"}, "class_id", None) == "config_value"
+
+    def test_default_used_when_no_env_var_or_config(self) -> None:
+        assert _cfg({}, "class_id", None, "default") == "default"
+
+    def test_env_var_key_is_uppercased(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_BASE_URL", "https://env.example.com")
+        assert _cfg({}, "base_url", None) == "https://env.example.com"
+
+    def test_env_var_cdp_url(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_CDP_URL", "http://localhost:5555")
+        assert _cfg({}, "cdp_url", None) == "http://localhost:5555"
+
+    def test_env_var_output_dir(self, monkeypatch) -> None:
+        monkeypatch.setenv("BRIGHTSPACE_OUTPUT_DIR", "/tmp/out")
+        assert _cfg({}, "output_dir", None) == "/tmp/out"

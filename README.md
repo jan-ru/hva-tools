@@ -190,6 +190,20 @@ Without `--config`, only `config/brightspace.toml` is loaded (shared defaults). 
 
 Supported keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`.
 
+## Environment Variables
+
+All config keys can also be set via environment variables with a `BRIGHTSPACE_` prefix:
+
+| Variable | Equivalent config key |
+|---|---|
+| `BRIGHTSPACE_CLASS_ID` | `class_id` |
+| `BRIGHTSPACE_BASE_URL` | `base_url` |
+| `BRIGHTSPACE_CDP_URL` | `cdp_url` |
+| `BRIGHTSPACE_OUTPUT_DIR` | `output_dir` |
+| `BRIGHTSPACE_CATEGORY_CONFIG` | `category_config` |
+
+Resolution order: CLI flag → environment variable → config file → built-in default.
+
 ## Category Filtering
 
 You can filter rubric criteria by category using a TOML config file. Each category maps to a list of substring patterns matched case-insensitively against criterion names:
