@@ -115,7 +115,7 @@ def navigate_to_classlist(
 
     Raises NavigationError if the page cannot be reached.
     """
-    url = f"{base_url}/d2l/lms/classlist/admin/classlist.d2l?ou={class_id}"
+    url = f"{base_url}/d2l/lms/classlist/classlist.d2l?ou={class_id}"
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=_NAV_TIMEOUT_MS)
     except Exception as exc:
