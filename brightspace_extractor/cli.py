@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import tomllib
 from pathlib import Path
 from typing import Annotated
 
@@ -71,6 +72,38 @@ def _fail_fast(exc: Exception, browser=None) -> None:
     sys.exit(1)
 
 
+_DEFAULT_CONFIG_PATH = "brightspace.toml"
+
+
+def _load_config(config_path: str | None = None) -> dict:
+    """Load shared parameters from a TOML config file.
+
+    Looks for ``brightspace.toml`` in the current directory by default.
+    Returns an empty dict if the file doesn't exist (unless an explicit
+    path was given, in which case it raises).
+    """
+    path = Path(config_path) if config_path else Path(_DEFAULT_CONFIG_PATH)
+
+    if not path.exists():
+        if config_path:
+            raise ConfigError(f"Config file not found: {config_path}")
+        return {}
+
+    try:
+        data = tomllib.loads(path.read_bytes().decode())
+    except tomllib.TOMLDecodeError as exc:
+        raise ConfigError(f"Malformed TOML in {path}: {exc}") from exc
+
+    return data
+
+
+def _cfg(config: dict, key: str, cli_value, default=None):
+    """Return CLI value if provided, else config value, else default."""
+    if cli_value is not None:
+        return cli_value
+    return config.get(key, default)
+
+
 def _connect_and_auth(
     cdp_url: str, base_url: str, class_id: str
 ) -> tuple[Browser, Page]:
@@ -129,22 +162,32 @@ def _parse_col_widths(raw: str) -> tuple[int, int, int]:
 # Commands
 # ---------------------------------------------------------------------------
 
+_CDP_DEFAULT = "http://localhost:9222"
+_BASE_URL_DEFAULT = "https://dlo.mijnhva.nl"
+
 
 @app.command
 def courses(
     *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+    ] = None,
     cdp_url: Annotated[
-        str, cyclopts.Parameter(help="Playwright CDP endpoint")
-    ] = "http://localhost:9222",
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
     base_url: Annotated[
-        str, cyclopts.Parameter(help="Brightspace instance base URL")
-    ] = "https://dlo.mijnhva.nl",
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
     output_dir: Annotated[
         str | None, cyclopts.Parameter(help="Write a courses.md file to this directory")
     ] = None,
 ) -> None:
     """List enrolled courses (class IDs) from the Brightspace homepage."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    cfg = _load_config(config)
+    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
+    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
+    output_dir = _cfg(cfg, "output_dir", output_dir)
 
     try:
         browser, _context, page = connect_to_browser(cdp_url)
@@ -191,14 +234,19 @@ def courses(
 
 @app.command
 def assignments(
-    class_id: Annotated[str, cyclopts.Parameter(help="Brightspace class identifier")],
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
     *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+    ] = None,
     cdp_url: Annotated[
-        str, cyclopts.Parameter(help="Playwright CDP endpoint")
-    ] = "http://localhost:9222",
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
     base_url: Annotated[
-        str, cyclopts.Parameter(help="Brightspace instance base URL")
-    ] = "https://dlo.mijnhva.nl",
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
     output_dir: Annotated[
         str | None,
         cyclopts.Parameter(help="Write an assignments.md file to this directory"),
@@ -206,6 +254,15 @@ def assignments(
 ) -> None:
     """List assignments (dropbox folders) for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    cfg = _load_config(config)
+    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
+    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
+    class_id = _cfg(cfg, "class_id", class_id)
+    output_dir = _cfg(cfg, "output_dir", output_dir)
+
+    if not class_id:
+        logger.error("class_id is required (pass as argument or set in config file)")
+        sys.exit(1)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -221,7 +278,6 @@ def assignments(
         print("No assignments found.")
         return
 
-    # Print as a simple table
     print(f"\n{'ID':<12} Name")
     print(f"{'—' * 12} {'—' * 40}")
     for item in items:
@@ -241,14 +297,19 @@ def assignments(
 
 @app.command
 def classlist(
-    class_id: Annotated[str, cyclopts.Parameter(help="Brightspace class identifier")],
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
     *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+    ] = None,
     cdp_url: Annotated[
-        str, cyclopts.Parameter(help="Playwright CDP endpoint")
-    ] = "http://localhost:9222",
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
     base_url: Annotated[
-        str, cyclopts.Parameter(help="Brightspace instance base URL")
-    ] = "https://dlo.mijnhva.nl",
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
     output_dir: Annotated[
         str | None,
         cyclopts.Parameter(help="Write a classlist.md file to this directory"),
@@ -256,6 +317,15 @@ def classlist(
 ) -> None:
     """List students enrolled in a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    cfg = _load_config(config)
+    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
+    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
+    class_id = _cfg(cfg, "class_id", class_id)
+    output_dir = _cfg(cfg, "output_dir", output_dir)
+
+    if not class_id:
+        logger.error("class_id is required (pass as argument or set in config file)")
+        sys.exit(1)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -295,14 +365,19 @@ def classlist(
 
 @app.command
 def groups(
-    class_id: Annotated[str, cyclopts.Parameter(help="Brightspace class identifier")],
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
     *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+    ] = None,
     cdp_url: Annotated[
-        str, cyclopts.Parameter(help="Playwright CDP endpoint")
-    ] = "http://localhost:9222",
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
     base_url: Annotated[
-        str, cyclopts.Parameter(help="Brightspace instance base URL")
-    ] = "https://dlo.mijnhva.nl",
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
     output_dir: Annotated[
         str | None,
         cyclopts.Parameter(help="Write a groups.md file to this directory"),
@@ -310,6 +385,15 @@ def groups(
 ) -> None:
     """List groups and their members for a class."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    cfg = _load_config(config)
+    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
+    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
+    class_id = _cfg(cfg, "class_id", class_id)
+    output_dir = _cfg(cfg, "output_dir", output_dir)
+
+    if not class_id:
+        logger.error("class_id is required (pass as argument or set in config file)")
+        sys.exit(1)
 
     browser, page = _connect_and_auth(cdp_url, base_url, class_id)
 
@@ -352,20 +436,25 @@ def groups(
 
 @app.command
 def extract(
-    class_id: Annotated[str, cyclopts.Parameter(help="Brightspace class identifier")],
+    class_id: Annotated[
+        str | None, cyclopts.Parameter(help="Brightspace class identifier")
+    ] = None,
     assignment_ids: Annotated[
-        list[str], cyclopts.Parameter(help="One or more assignment identifiers")
-    ],
+        list[str] | None, cyclopts.Parameter(help="One or more assignment identifiers")
+    ] = None,
     *,
+    config: Annotated[
+        str | None, cyclopts.Parameter(help="Path to brightspace.toml config file")
+    ] = None,
     output_dir: Annotated[
-        str, cyclopts.Parameter(help="Output directory for markdown files")
-    ] = "./output",
+        str | None, cyclopts.Parameter(help="Output directory for markdown files")
+    ] = None,
     cdp_url: Annotated[
-        str, cyclopts.Parameter(help="Playwright CDP endpoint")
-    ] = "http://localhost:9222",
+        str | None, cyclopts.Parameter(help="Playwright CDP endpoint")
+    ] = None,
     base_url: Annotated[
-        str, cyclopts.Parameter(help="Brightspace instance base URL")
-    ] = "https://dlo.mijnhva.nl",
+        str | None, cyclopts.Parameter(help="Brightspace instance base URL")
+    ] = None,
     category: Annotated[
         str | None, cyclopts.Parameter(help="Category to filter criteria by")
     ] = None,
@@ -388,10 +477,19 @@ def extract(
 ) -> None:
     """Extract rubric feedback for specified class and assignments."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    cfg = _load_config(config)
+    cdp_url = _cfg(cfg, "cdp_url", cdp_url, _CDP_DEFAULT)
+    base_url = _cfg(cfg, "base_url", base_url, _BASE_URL_DEFAULT)
+    class_id = _cfg(cfg, "class_id", class_id)
+    output_dir = _cfg(cfg, "output_dir", output_dir, "./output")
 
-    # --- validate CLI parameters (fail-fast) ---
-    if category and not category_config:
-        logger.error("--category requires --category-config to be specified")
+    if not class_id:
+        logger.error("class_id is required (pass as argument or set in config file)")
+        sys.exit(1)
+    if not assignment_ids:
+        logger.error(
+            "assignment_ids are required (pass as arguments or set in config file)"
+        )
         sys.exit(1)
 
     parsed_col_widths: tuple[int, int, int] = (3, 1, 6)
@@ -403,9 +501,13 @@ def extract(
 
     patterns: tuple[str, ...] | None = None
     if category:
+        category_config = category_config or cfg.get("category_config")
+        if not category_config:
+            logger.error("--category requires --category-config to be specified")
+            sys.exit(1)
         try:
-            config = load_category_config(category_config)  # type: ignore[arg-type]
-            patterns = get_patterns(config, category)
+            cat_cfg = load_category_config(category_config)
+            patterns = get_patterns(cat_cfg, category)
         except ConfigError as exc:
             _fail_fast(exc)
 

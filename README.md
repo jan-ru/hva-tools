@@ -56,8 +56,11 @@ Options (shared by all commands):
 
 | Flag | Default | Description |
 |---|---|---|
+| `--config` | `brightspace.toml` | Path to TOML config file (auto-detected in current directory) |
 | `--cdp-url` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
 | `--base-url` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
+
+> **Tip:** Any CLI flag can also be set in a `brightspace.toml` config file. CLI flags take precedence over config values. See [Configuration File](#configuration-file) below.
 
 Additional options for `courses`:
 
@@ -145,6 +148,32 @@ feedback/
 ├── team-beta.md
 ├── team-beta.pdf
 └── ...
+```
+
+## Configuration File
+
+Instead of passing flags on every invocation, you can store shared parameters in a `brightspace.toml` file. The tool automatically looks for this file in the current directory. Use `--config` to point to a different path.
+
+```toml
+cdp_url = "http://localhost:9222"
+base_url = "https://dlo.mijnhva.nl"
+class_id = "12345"
+assignment_ids = ["67890", "67891"]
+output_dir = "./feedback"
+```
+
+Resolution order: CLI flag → config file → built-in default. Positional arguments like `class_id` and `assignment_ids` can also be provided via the config file, making them optional on the command line.
+
+With a config file in place, extraction becomes:
+
+```bash
+brightspace-extractor extract
+```
+
+Or override just what you need:
+
+```bash
+brightspace-extractor extract --output-dir ./other-folder
 ```
 
 ## Category Filtering

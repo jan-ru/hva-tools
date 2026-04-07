@@ -1,0 +1,9 @@
+# Brightspace Extractor configuration
+# Copy to brightspace.toml and adjust values for your environment.
+# CLI arguments always override these defaults.
+
+class_id = "698557"
+base_url = "https://dlo.mijnhva.nl"
+cdp_url = "http://localhost:9222"
+output_dir = "./output"
+category_config = "categories.toml"
