@@ -220,13 +220,29 @@ def extract_assignments(page: Page) -> list[dict]:
 
 
 def extract_classlist(page: Page) -> list[dict]:
-    """Extract student names and usernames from the classlist page.
+    """Extract student names, org defined IDs, and roles from the classlist page.
 
-    Returns a list of dicts with keys: name, username.
+    Automatically selects "200 per page" to avoid pagination where possible,
+    then scrapes all rows from the d2l-table grid.
+
+    Returns a list of dicts with keys: name, org_defined_id, role.
     """
     students: list[dict] = []
 
-    rows = page.locator("tr.d_ggl1, tr.d_ggl2")
+    # Select "200 per page" to minimise pagination
+    page_size_select = page.locator("select[name='gridUsers_sl_pgS2']")
+    if page_size_select.count() > 0:
+        page_size_select.first.select_option("200")
+        page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(2000)
+
+    # Rows are inside table#z_e; each data row has a th.d_ich with the name
+    table = page.locator("table.d2l-table.d_gl")
+    if table.count() == 0:
+        logger.warning("No classlist table found on the page.")
+        return students
+
+    rows = table.locator("tr:has(th.d_ich)")
     try:
         rows.first.wait_for(timeout=15_000)
     except Exception:
@@ -238,27 +254,30 @@ def extract_classlist(page: Page) -> list[dict]:
 
     for i in range(row_count):
         row = rows.nth(i)
-        cells = row.locator("td")
-        cell_count = cells.count()
-        if cell_count < 2:
-            continue
 
-        # Brightspace classlist: first cell has a context menu, second has the name link
-        name_link = row.locator("td a.d2l-link")
-        if name_link.count() == 0:
-            name_link = row.locator("td a")
+        # Name is in th.d_ich > a
+        name_el = row.locator("th.d_ich a.d2l-link")
+        name = (
+            (name_el.first.text_content() or "").strip() if name_el.count() > 0 else ""
+        )
 
-        name = ""
-        if name_link.count() > 0:
-            name = (name_link.first.text_content() or "").strip()
+        # Org Defined ID and Role are in td.d_gn > label elements
+        labels = row.locator("td.d_gn label")
+        label_count = labels.count()
 
-        # Username is often in a later cell (varies by Brightspace config)
-        username = ""
-        if cell_count >= 3:
-            username = (cells.nth(2).text_content() or "").strip()
+        org_defined_id = (
+            (labels.nth(0).text_content() or "").strip() if label_count >= 1 else ""
+        )
+        role = (labels.nth(1).text_content() or "").strip() if label_count >= 2 else ""
 
         if name:
-            students.append({"name": name, "username": username})
+            students.append(
+                {
+                    "name": name,
+                    "org_defined_id": org_defined_id,
+                    "role": role,
+                }
+            )
 
     return students
 

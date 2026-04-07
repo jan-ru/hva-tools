@@ -253,18 +253,23 @@ def classlist(
         print("No students found.")
         return
 
-    print(f"\n{'Name':<30} Username")
-    print(f"{'—' * 30} {'—' * 20}")
+    print(f"\n{'Name':<30} {'Org Defined ID':<16} Role")
+    print(f"{'—' * 30} {'—' * 16} {'—' * 20}")
     for s in students:
-        print(f"{s['name']:<30} {s['username']}")
+        print(f"{s['name']:<30} {s['org_defined_id']:<16} {s['role']}")
     print(f"\n{len(students)} student(s) found.")
 
     if output_dir is not None:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
-        lines = ["# Classlist", "", "| Name | Username |", "|---|---|"]
+        lines = [
+            "# Classlist",
+            "",
+            "| Name | Org Defined ID | Role |",
+            "|---|---|---|",
+        ]
         for s in students:
-            lines.append(f"| {s['name']} | {s['username']} |")
+            lines.append(f"| {s['name']} | {s['org_defined_id']} | {s['role']} |")
         lines.append("")
         (out / "classlist.md").write_text("\n".join(lines), encoding="utf-8")
         print(f"Written to {out / 'classlist.md'}")

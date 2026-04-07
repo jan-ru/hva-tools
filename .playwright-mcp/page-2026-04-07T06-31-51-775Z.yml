@@ -1,0 +1,16 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - img "hva.nl" [ref=e8]
+    - main [ref=e9]:
+      - generic [ref=e12]:
+        - heading "Sign in with your AUAS email address or AUAS-ID (without @hva.nl" [level=2] [ref=e14]
+        - generic [ref=e16]:
+          - textbox "User Account" [active] [ref=e18]:
+            - /placeholder: AUAS email address or AUAS-ID (without @hva.nl
+          - textbox "Password" [ref=e20]
+          - button "Sign in" [ref=e22] [cursor=pointer]
+        - generic [ref=e23]:
+          - link "I have trouble logging in" [ref=e24] [cursor=pointer]:
+            - /url: https://www.amsterdamuas.com/practical-matters/two-step-verification/microsoft-authenticator
+          - text: Please log out and exit all your web browsers when you are done to make sure nobody else can access your personal information.
+  - contentinfo [ref=e26]

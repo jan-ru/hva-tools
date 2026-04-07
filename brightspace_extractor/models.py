@@ -71,10 +71,11 @@ class AssignmentInfo(BaseModel, frozen=True):
 
 
 class ClassMember(BaseModel, frozen=True):
-    """A student enrolled in the class."""
+    """A student or staff member enrolled in the class."""
 
     name: str
-    username: str
+    org_defined_id: str
+    role: str
 
 
 class GroupInfo(BaseModel, frozen=True):
