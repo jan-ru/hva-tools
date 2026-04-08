@@ -82,6 +82,7 @@ See [docs/commands.md](docs/commands.md) for all options and examples.
 | [docs/architecture.md](docs/architecture.md) | Pipeline design, module responsibilities, data flow |
 | [docs/output-format.md](docs/output-format.md) | Markdown output format with examples |
 | [docs/entity-relationship.md](docs/entity-relationship.md) | Mermaid ER diagram of domain models |
+| [docs/future.md](docs/future.md) | Future architecture: browser extension + API on VPS |
 
 ## Development
 
