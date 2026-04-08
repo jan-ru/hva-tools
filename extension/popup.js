@@ -37,6 +37,17 @@ function tableToTSV(rows) {
 
 // ── UI helpers ──────────────────────────────────────────────────────────────
 
+/**
+ * Escape HTML special characters to prevent XSS when inserting into innerHTML.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
 const $status = document.getElementById("status");
 const $controls = document.getElementById("controls");
 const $formatSelect = document.getElementById("format-select");
@@ -91,11 +102,11 @@ function renderTable(rows) {
   if (!rows.length) return;
   const keys = Object.keys(rows[0]);
   let html = "<table><thead><tr>";
-  for (const k of keys) html += `<th>${k}</th>`;
+  for (const k of keys) html += `<th>${escapeHtml(k)}</th>`;
   html += "</tr></thead><tbody>";
   for (const row of rows) {
     html += "<tr>";
-    for (const k of keys) html += `<td>${row[k] ?? ""}</td>`;
+    for (const k of keys) html += `<td>${escapeHtml(String(row[k] ?? ""))}</td>`;
     html += "</tr>";
   }
   html += "</tbody></table>";
@@ -214,7 +225,7 @@ async function init() {
       } else if (result.type === "markdown") {
         $resultInfo.textContent = "Markdown received.";
         $resultInfo.style.display = "block";
-        $result.innerHTML = `<pre style="white-space:pre-wrap;font-size:12px;max-height:300px;overflow:auto;">${result.data}</pre>`;
+        $result.innerHTML = `<pre style="white-space:pre-wrap;font-size:12px;max-height:300px;overflow:auto;">${escapeHtml(result.data)}</pre>`;
         $result.style.display = "block";
       } else {
         // JSON array — render as table

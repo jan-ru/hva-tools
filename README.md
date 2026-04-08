@@ -113,6 +113,7 @@ See [docs/api.md](docs/api.md) for endpoint details and [docs/configuration.md](
 | [docs/output-format.md](docs/output-format.md) | Markdown output format with examples |
 | [docs/entity-relationship.md](docs/entity-relationship.md) | Mermaid ER diagram of domain models |
 | [docs/future.md](docs/future.md) | Potential future improvements |
+| [docs/security.md](docs/security.md) | Security considerations and hardening steps |
 
 ## Development
 

@@ -53,9 +53,26 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 
+# Maximum request body size: 10 MB. Brightspace pages are typically 1-3 MB.
+MAX_BODY_BYTES = 10 * 1024 * 1024
+
+
 async def _read_html(request: Request) -> str:
     """Read and validate the raw HTML body from the request."""
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_BODY_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Request body too large (max {MAX_BODY_BYTES // 1024 // 1024} MB)",
+        )
+
     body = await request.body()
+    if len(body) > MAX_BODY_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Request body too large (max {MAX_BODY_BYTES // 1024 // 1024} MB)",
+        )
+
     html = body.decode("utf-8", errors="replace").strip()
     if not html:
         raise HTTPException(
