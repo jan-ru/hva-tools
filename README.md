@@ -23,6 +23,10 @@ uv sync
 
 ### Launch your browser with remote debugging
 
+1. Close all browser windows first (including background processes in the system tray). The `--remote-debugging-port` flag only works if the browser is fully closed.
+
+2. Launch the browser with remote debugging enabled:
+
 ```powershell
 # Microsoft Edge (recommended)
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222
@@ -31,7 +35,9 @@ uv sync
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
 ```
 
-Then log in to Brightspace manually (SSO, 2FA, etc.). The tool connects to this session — it does not automate login.
+3. Log in to Brightspace manually (SSO, 2FA, etc.), then run the tool. It connects to this session — it does not automate login.
+
+> Tip: verify the debug port is active by opening http://localhost:9222 in another browser.
 
 ### Usage
 

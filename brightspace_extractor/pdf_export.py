@@ -9,30 +9,36 @@ from brightspace_extractor.exceptions import PdfExportError
 
 logger = logging.getLogger(__name__)
 
+# Resolved at startup from config or PATH. Use set_pandoc_path() to override.
+_pandoc_path: str = "pandoc"
+
+
+def set_pandoc_path(path: str) -> None:
+    """Set the pandoc executable path. Called from CLI config resolution."""
+    global _pandoc_path  # noqa: PLW0603
+    _pandoc_path = path
+
 
 def check_pandoc_available() -> None:
-    """Verify pandoc is on PATH. Raises PdfExportError if not found."""
-    if shutil.which("pandoc") is None:
+    """Verify pandoc is reachable. Raises PdfExportError if not found."""
+    if shutil.which(_pandoc_path) is None and not Path(_pandoc_path).is_file():
         raise PdfExportError(
-            "pandoc is not installed or not found on PATH. "
-            "Install pandoc (https://pandoc.org/installing.html) and ensure it is on your PATH."
+            f"pandoc not found at '{_pandoc_path}'.\n"
+            "Set pandoc_path in your config file or install pandoc on your PATH."
         )
 
 
-def convert_md_to_pdf(
-    md_path: str,
-    pdf_path: str,
+def _pandoc_cmd(
+    inputs: list[str],
+    output: str,
     margins: str = "1.1cm",
-) -> None:
-    """Convert a single markdown file to PDF using pandoc + typst.
-
-    Raises PdfExportError on pandoc failure.
-    """
-    cmd = [
-        "pandoc",
-        md_path,
+) -> list[str]:
+    """Build the pandoc command list."""
+    return [
+        _pandoc_path,
+        *inputs,
         "-o",
-        pdf_path,
+        output,
         "--pdf-engine=typst",
         "-V",
         f"margin-top:{margins}",
@@ -45,6 +51,18 @@ def convert_md_to_pdf(
         "-V",
         "papersize:a4",
     ]
+
+
+def convert_md_to_pdf(
+    md_path: str,
+    pdf_path: str,
+    margins: str = "1.1cm",
+) -> None:
+    """Convert a single markdown file to PDF using pandoc + typst.
+
+    Raises PdfExportError on pandoc failure.
+    """
+    cmd = _pandoc_cmd([md_path], pdf_path, margins)
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         raise PdfExportError(f"pandoc failed for {md_path}: {result.stderr.strip()}")
@@ -82,9 +100,6 @@ def export_combined_pdf(
 ) -> None:
     """Concatenate all .md files in md_dir into a single PDF.
 
-    Passes all markdown files to a single pandoc invocation so they are
-    rendered as one continuous document.
-
     Raises PdfExportError on pandoc failure.
     """
     md_files = sorted(Path(md_dir).glob("*.md"))
@@ -93,23 +108,7 @@ def export_combined_pdf(
         return
 
     pdf_path = str(Path(md_dir) / output_filename)
-    cmd = [
-        "pandoc",
-        *[str(f) for f in md_files],
-        "-o",
-        pdf_path,
-        "--pdf-engine=typst",
-        "-V",
-        f"margin-top:{margins}",
-        "-V",
-        f"margin-bottom:{margins}",
-        "-V",
-        f"margin-left:{margins}",
-        "-V",
-        f"margin-right:{margins}",
-        "-V",
-        "papersize:a4",
-    ]
+    cmd = _pandoc_cmd([str(f) for f in md_files], pdf_path, margins)
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         raise PdfExportError(f"pandoc failed for combined PDF: {result.stderr.strip()}")

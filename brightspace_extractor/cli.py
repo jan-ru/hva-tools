@@ -51,6 +51,7 @@ from brightspace_extractor.pdf_export import (
     check_pandoc_available,
     export_all_pdfs,
     export_combined_pdf,
+    set_pandoc_path,
 )
 from brightspace_extractor.serialization import (
     group_to_filename,
@@ -613,6 +614,11 @@ def extract(
         config, cdp_url, base_url, class_id, output_dir, output_dir_default="./output"
     )
     class_id = _require_class_id(class_id)
+
+    # Resolve pandoc path from config (supports non-PATH installs like scoop)
+    pandoc_path = cfg.get("pandoc_path")
+    if pandoc_path:
+        set_pandoc_path(pandoc_path)
 
     if not assignment_ids:
         logger.error(

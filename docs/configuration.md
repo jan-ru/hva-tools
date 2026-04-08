@@ -30,7 +30,17 @@ brightspace-extractor assignments --config config/BigData.toml
 
 Without `--config`, only `config/brightspace.toml` is loaded (shared defaults). CLI arguments always override config values.
 
-Supported keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`.
+Supported keys: `class_id`, `base_url`, `cdp_url`, `output_dir`, `category_config`, `pandoc_path`.
+
+### `pandoc_path`
+
+Override the path to the `pandoc` binary. Useful when pandoc is not on your system `PATH` (e.g., installed via scoop):
+
+```toml
+pandoc_path = "C:\\Users\\you\\scoop\\apps\\pandoc\\3.9\\pandoc.exe"
+```
+
+Defaults to `"pandoc"` (i.e., looked up from `PATH`).
 
 ## Environment Variables
 

@@ -20,7 +20,7 @@ class TestCheckPandocAvailable:
 
     @patch("brightspace_extractor.pdf_export.shutil.which", return_value=None)
     def test_raises_when_pandoc_not_found(self, mock_which: MagicMock) -> None:
-        with pytest.raises(PdfExportError, match="pandoc is not installed"):
+        with pytest.raises(PdfExportError, match="pandoc not found"):
             check_pandoc_available()
         mock_which.assert_called_once_with("pandoc")
 
