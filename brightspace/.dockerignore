@@ -1,0 +1,16 @@
+.git
+.venv
+.hypothesis
+.pytest_cache
+.ruff_cache
+.kiro
+.vscode
+.playwright-mcp
+.coverage
+docs
+tests
+output
+scripts
+extension
+__pycache__
+*.pyc

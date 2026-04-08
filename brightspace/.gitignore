@@ -1,0 +1,33 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Hypothesis
+.hypothesis/
+
+# IDE
+.vscode/
+
+# pytest
+.pytest_cache/
+.coverage
+
+# Kiro MCP settings (may contain tokens)
+.kiro/settings/
+
+# Extracted output data
+output/
+
+# Config files (user-specific, except example)
+config/*.toml
+!config/brightspace.example.toml
+
+# Playwright MCP artifacts
+.playwright-mcp/

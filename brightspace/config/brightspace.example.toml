@@ -1,0 +1,10 @@
+# Brightspace Extractor — example course configuration
+# Copy this file and adjust for each course.
+# Usage: uv run brightspace-extractor classlist --config config/MyCourse.toml
+
+class_id = "698557"
+base_url = "https://dlo.mijnhva.nl"
+cdp_url = "http://localhost:9222"
+output_dir = "./output/my-course"
+category_config = "categories.toml"
+pandoc_path = "pandoc"  # full path if not on PATH, e.g. "C:\\Users\\you\\scoop\\apps\\pandoc\\3.9\\pandoc.exe"

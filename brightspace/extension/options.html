@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brightspace Extractor — Settings</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 18px; margin-bottom: 20px; }
+    label { display: block; font-size: 14px; margin-bottom: 6px; font-weight: 500; }
+    input[type="url"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 12px;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #106ebe; }
+    .saved {
+      color: #27ae60;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Settings</h1>
+  <label for="api-url">API Base URL</label>
+  <input type="url" id="api-url" placeholder="http://localhost:8000">
+  <button id="save-btn">Save</button>
+  <div id="saved" class="saved">Settings saved.</div>
+  <script src="config.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
