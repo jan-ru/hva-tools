@@ -616,9 +616,8 @@ def extract(
     class_id = _require_class_id(class_id)
 
     # Resolve pandoc path from config (supports non-PATH installs like scoop)
-    pandoc_path = cfg.get("pandoc_path")
-    if pandoc_path:
-        set_pandoc_path(pandoc_path)
+    pandoc_path = _cfg(cfg, "pandoc_path", None, "pandoc")
+    set_pandoc_path(pandoc_path)
 
     if not assignment_ids:
         logger.error(
