@@ -1,12 +1,15 @@
 # Brightspace Feedback Extractor
 
-A CLI tool that extracts rubric feedback from [Brightspace DLO](https://www.d2l.com/) using Playwright. It connects to a browser where you've already logged in, navigates to evaluation pages, and calls the Brightspace Assessments API to retrieve rubric scores and comments for student groups across assignments. Output is one markdown file per group, with optional PDF export via pandoc + typst.
+Extract rubric feedback from [Brightspace DLO](https://www.d2l.com/) in bulk. Two interfaces:
+
+- **CLI** — connects to a local browser via CDP, navigates evaluation pages, calls the Brightspace Assessments API to retrieve rubric scores and comments. Output is one markdown file per group, with optional PDF export via pandoc + typst.
+- **Browser extension + API** — a Manifest V3 extension captures page HTML from your authenticated Brightspace session and sends it to a FastAPI backend, which returns structured JSON, markdown, or PDF. No local Python needed for end users.
 
 ## Why?
 
 Brightspace doesn't offer a convenient way to export rubric feedback in bulk. This tool automates the tedious click-through process so you can review, share, or archive feedback outside the LMS.
 
-## Quick Start
+## Quick Start — CLI
 
 ### Prerequisites
 
@@ -73,30 +76,59 @@ brightspace-extractor extract 698557 336741 336743 --category MIS --pdf --combin
 
 See [docs/commands.md](docs/commands.md) for all options and examples.
 
+## Quick Start — API + Browser Extension
+
+### Run the API
+
+```bash
+docker compose up -d
+```
+
+The API is available at `http://localhost:8000`. Verify:
+
+```bash
+curl http://localhost:8000/health
+# {"status": "ok"}
+```
+
+### Install the extension
+
+1. Open `chrome://extensions` (or `edge://extensions`)
+2. Enable "Developer mode"
+3. Click "Load unpacked" and select the `extension/` directory
+4. Navigate to any Brightspace page and click the extension icon
+
+The extension detects the page type, captures the HTML, sends it to the API, and displays results in a popup. Configure the API URL in the extension's options page.
+
+See [docs/api.md](docs/api.md) for endpoint details and [docs/configuration.md](docs/configuration.md) for Docker and extension settings.
+
 ## Documentation
 
 | Document | Description |
 |---|---|
 | [docs/commands.md](docs/commands.md) | Full CLI reference with all flags and examples |
-| [docs/configuration.md](docs/configuration.md) | Config files, environment variables, category filtering |
-| [docs/architecture.md](docs/architecture.md) | Pipeline design, module responsibilities, data flow |
+| [docs/api.md](docs/api.md) | API endpoint reference (health, listing, extract) |
+| [docs/configuration.md](docs/configuration.md) | Config files, environment variables, Docker, extension settings |
+| [docs/architecture.md](docs/architecture.md) | Dual-interface architecture, module responsibilities, data flow |
 | [docs/output-format.md](docs/output-format.md) | Markdown output format with examples |
 | [docs/entity-relationship.md](docs/entity-relationship.md) | Mermaid ER diagram of domain models |
-| [docs/future.md](docs/future.md) | Future architecture: browser extension + API on VPS |
+| [docs/future.md](docs/future.md) | Potential future improvements |
 
 ## Development
 
 ```bash
 uv sync                                          # install with dev dependencies
-uv run pytest                                    # run tests
+uv run pytest                                    # run all tests
 uv run pytest --cov=brightspace_extractor        # run with coverage
 uv run pytest -k "property"                      # property-based tests only
+uv run pytest -m "not docker"                    # skip Docker integration tests
 ```
 
 ## Error Handling
 
 - Setup errors (connection, auth, class not found, bad config) → fail fast with exit code 1
 - Per-item errors (missing assignment, timeout, missing rubric) → log warning, skip, continue
+- API errors → structured JSON `{"detail": "..."}` with appropriate HTTP status codes (422, 404, 500, 503)
 
 ## License
 

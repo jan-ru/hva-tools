@@ -5,7 +5,7 @@ This diagram shows the domain models defined in [`brightspace_extractor/models.p
 The models fall into two groups:
 
 - **Pipeline models** — used during the extract → parse → aggregate → serialize flow. `AssignmentFeedback` and `GroupSubmission` represent the raw extraction output (per-assignment). `GroupFeedback` and `AssignmentEntry` represent the aggregated output (per-group), which is what gets serialized to markdown/PDF.
-- **Discovery models** — lightweight models returned by the `courses`, `assignments`, `classlist`, and `groups` CLI commands. These are standalone and have no relationships to each other.
+- **Discovery models** — lightweight models returned by the `courses`, `assignments`, `classlist`, `groups`, `quizzes`, and `rubrics` commands. These are standalone and have no relationships to each other.
 
 ```mermaid
 erDiagram

@@ -1,8 +1,11 @@
 """Shared test fixtures, Hypothesis strategies, and factory helpers."""
 
 from datetime import date
+from pathlib import Path
 
+import pytest
 from hypothesis import strategies as st
+from playwright.sync_api import sync_playwright
 
 from brightspace_extractor.models import (
     AssignmentEntry,
@@ -17,6 +20,8 @@ from brightspace_extractor.models import (
 # ---------------------------------------------------------------------------
 # Reusable constants
 # ---------------------------------------------------------------------------
+
+FIXTURES_DIR = Path(__file__).parent
 
 ALICE = Student(name="Alice")
 BOB = Student(name="Bob")
@@ -87,3 +92,34 @@ assignment_feedback_st = st.builds(
     assignment_id=st.uuids().map(str),
     submissions=st.lists(group_submission_st, min_size=1, max_size=6).map(tuple),
 )
+
+
+# ---------------------------------------------------------------------------
+# Shared Playwright fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def pw_browser():
+    """Module-scoped Playwright browser for fixture tests."""
+    pw = sync_playwright().start()
+    browser = pw.chromium.launch(headless=True)
+    yield browser
+    browser.close()
+    pw.stop()
+
+
+@pytest.fixture(scope="module")
+def pw_page(pw_browser, request):
+    """Module-scoped Playwright page loaded with the fixture HTML.
+
+    Test modules set ``FIXTURE_NAME`` at module level to specify which
+    HTML file to load.  Falls back to requiring the name via a marker.
+    """
+    fixture_name = getattr(request.module, "FIXTURE_NAME", None)
+    if fixture_name is None:
+        pytest.skip("No FIXTURE_NAME defined on module")
+    page = pw_browser.new_page()
+    page.goto((FIXTURES_DIR / fixture_name).as_uri())
+    yield page
+    page.close()

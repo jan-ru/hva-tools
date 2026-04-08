@@ -1,5 +1,7 @@
 # CLI Commands
 
+For the API endpoints (used by the browser extension), see [api.md](api.md).
+
 All commands share these options:
 
 | Flag | Default | Description |

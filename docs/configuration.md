@@ -74,3 +74,54 @@ MAC = ["kostprijs", "budget omzet"]
 ```
 
 Use `--category MIS --category-config categories.toml` to include only criteria matching the MIS patterns. The `category_config` key can also be set in a config file to avoid repeating it.
+
+## Docker Deployment (API)
+
+The API runs in Docker and reads configuration from environment variables only (no config files needed).
+
+### Quick Start
+
+```bash
+docker compose up -d
+```
+
+The API is available at `http://localhost:8000`. Verify with:
+
+```bash
+curl http://localhost:8000/health
+# {"status": "ok"}
+```
+
+### Environment Variables
+
+Set in `docker-compose.yml` or via `docker run -e`:
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRIGHTSPACE_BASE_URL` | `https://dlo.mijnhva.nl` | Brightspace instance base URL |
+| `BRIGHTSPACE_CATEGORY_CONFIG` | — | Path to category TOML inside the container (e.g. `/app/categories.toml`) |
+| `BRIGHTSPACE_ASSIGNMENT_NAME` | `Assignment` | Default assignment name for extract endpoint |
+| `BRIGHTSPACE_ASSIGNMENT_ID` | `0` | Default assignment ID for extract endpoint |
+
+### Docker Compose
+
+The included `docker-compose.yml` defines the API service with:
+
+- Port mapping: `8000:8000`
+- Health check: polls `/health` every 30s (5s timeout, 3 retries, 5s start period)
+- Restart policy: `unless-stopped`
+- Pandoc pre-installed for PDF export
+
+### Dockerfile
+
+Base image: `python:3.14-slim`. Dependencies installed with `uv sync --no-dev --frozen`. Pandoc installed via apt for PDF export. Runs uvicorn on port 8000.
+
+## Browser Extension Settings
+
+The extension stores its configuration in `chrome.storage.local`:
+
+| Setting | Default | Description |
+|---|---|---|
+| API base URL | `http://localhost:8000` | The URL of the FastAPI backend |
+
+Configure via the extension's options page (right-click extension icon → Options).

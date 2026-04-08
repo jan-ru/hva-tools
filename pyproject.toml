@@ -6,9 +6,12 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
     "cyclopts>=4.10.1",
+    "fastapi>=0.135.3",
     "playwright>=1.58.0",
     "pydantic>=2.12.5",
+    "uvicorn>=0.44.0",
 ]
 
 [project.scripts]
@@ -16,6 +19,7 @@ brightspace-extractor = "brightspace_extractor.cli:app"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "hypothesis>=6.151.10",
     "pytest>=9.0.2",
     "pytest-cov>=7.1.0",
@@ -28,3 +32,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["brightspace_extractor"]
+
+[tool.pytest.ini_options]
+markers = [
+    "docker: integration tests requiring Docker (deselect with '-m \"not docker\"')",
+]
