@@ -3,7 +3,7 @@ name = "opm-sprint2-webpage"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "pytest>=8.0",
+    "pytest>=9.0.3",
     "pyyaml>=6.0",
     "beautifulsoup4>=4.12",
     "prek",
